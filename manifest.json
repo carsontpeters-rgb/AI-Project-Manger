@@ -1,0 +1,39 @@
+{
+  "name": "Maker.OS",
+  "short_name": "Maker.OS",
+  "description": "Personal maker engineering command center",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#040506",
+  "theme_color": "#00c8c8",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Project",
+      "short_name": "Project",
+      "url": "/?action=new-project",
+      "description": "Create a new project"
+    },
+    {
+      "name": "Add Inventory",
+      "short_name": "Inventory",
+      "url": "/?action=new-inventory",
+      "description": "Add an inventory item"
+    }
+  ]
+}

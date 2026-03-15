@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#00c8c8">
+<link rel="manifest" href="manifest.json">
+<title>Maker.OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Share+Tech+Mono&family=Oxanium:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040506;--panel:#0a0d10;--panel2:#0c0f14;
+  --border:#111820;--border2:#162030;--border3:#1e3040;
+  --cyan:#00c8c8;--cyan2:#00e8e8;--cyan3:#006666;--cyan4:#004444;
+  --grey:#6a8090;--grey2:#8a9aaa;--white:#d8eaf0;
+  --dim:#1a2830;--text:#5a7888;--text2:#8aaabb;
+  --red:#c02828;--warn:#c07820;--green2:#40c878;
+  --scan:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;cursor:default;}
+body::before{content:'';position:fixed;inset:0;background:var(--scan);pointer-events:none;z-index:8000;opacity:0.15;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.5) 100%);pointer-events:none;z-index:0;}
+.gl{position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,200,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,200,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+.corner{position:fixed;width:46px;height:46px;z-index:100;border-color:var(--cyan3);border-style:solid;opacity:0.5;}
+.corner.tl{top:5px;left:5px;border-width:1px 0 0 1px;}.corner.tr{top:5px;right:5px;border-width:1px 1px 0 0;}
+.corner.bl{bottom:5px;left:5px;border-width:0 0 1px 1px;}.corner.br{bottom:5px;right:5px;border-width:0 1px 1px 0;}
+body.dim-mode .shell{opacity:var(--dl,0.2);transition:opacity 0.3s;}
+body.dim-mode .shell:hover{opacity:1;}
+body.dim-mode .chat-panel{display:none!important;}
+.shell{display:grid;grid-template-columns:210px 1fr 270px;grid-template-rows:48px 1fr 36px;width:100vw;height:100vh;gap:2px;padding:5px;background:#020304;position:relative;z-index:1;transition:opacity 0.3s;}
+/* HEADER */
+.hdr{grid-column:1/-1;background:var(--panel2);border:1px solid var(--border2);border-left:3px solid var(--cyan);display:flex;align-items:center;padding:0 14px;gap:0;overflow:hidden;}
+.logo{font-family:'Oxanium',sans-serif;font-size:18px;font-weight:800;letter-spacing:4px;color:var(--white);text-shadow:0 0 20px rgba(0,200,200,0.3);}
+.logo em{color:var(--cyan);font-style:normal;}
+.hdiv{width:1px;height:24px;background:var(--border2);margin:0 14px;}
+.nav-tabs{display:flex;gap:1px;}
+.ntab{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;padding:5px 10px;border:1px solid transparent;color:var(--dim);text-transform:uppercase;cursor:pointer;transition:all 0.15s;position:relative;user-select:none;}
+.ntab:hover{color:var(--text);border-color:var(--border2);}
+.ntab.active{color:var(--cyan);border-color:var(--border2);background:rgba(0,200,200,0.05);}
+.ntab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--cyan);}
+.ntab .ab{display:inline-block;background:rgba(0,200,200,0.15);color:var(--cyan);font-size:7px;padding:1px 3px;margin-left:2px;border:1px solid var(--cyan3);vertical-align:middle;}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:14px;}
+.hstat{display:flex;flex-direction:column;align-items:center;}
+.hstat .sv{font-family:'Oxanium',sans-serif;font-size:14px;font-weight:600;color:var(--cyan);line-height:1;}
+.hstat .sl{font-size:7px;color:var(--dim);letter-spacing:2px;}
+.spill{display:flex;align-items:center;gap:4px;font-size:8px;padding:2px 7px;border:1px solid var(--border2);color:var(--grey);}
+.sdot{width:5px;height:5px;border-radius:50%;animation:pulse 2s infinite;}
+.sdot.on{background:var(--green2);box-shadow:0 0 5px var(--green2);}
+.sdot.off{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.clk{font-family:'Oxanium',sans-serif;font-size:16px;font-weight:600;color:var(--white);letter-spacing:3px;border:1px solid var(--border2);padding:3px 10px;background:rgba(0,200,200,0.04);}
+.dimbtn{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 8px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all 0.15s;user-select:none;}
+.dimbtn:hover,.dimbtn.on{color:var(--cyan);border-color:var(--cyan3);}
+/* LEFT */
+.left{background:var(--panel);border:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;}
+.phdr{display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border2);background:rgba(0,0,0,0.3);flex-shrink:0;}
+.phdr-t{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;}
+.phdr-id{margin-left:auto;font-size:7px;color:var(--dim);}
+.sec{padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.slbl{font-size:7px;color:var(--dim);letter-spacing:2px;margin-bottom:5px;text-transform:uppercase;}
+.agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+.atile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden;text-decoration:none;background:transparent;}
+.atile::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--cyan4);transition:background 0.15s;}
+.atile:hover{border-color:var(--border3);background:rgba(0,200,200,0.05);}
+.atile:hover::before{background:var(--cyan);}
+.atile .ti{font-size:15px;}.atile .tn{font-size:7px;color:var(--text);text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.vitals{padding:7px 10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.vrow{display:flex;flex-direction:column;gap:2px;}
+.vtop{display:flex;justify-content:space-between;font-size:8px;}
+.vlbl{color:var(--text);}.vval{color:var(--cyan);}
+.vtrack{height:2px;background:var(--border);}
+.vfill{height:100%;background:linear-gradient(90deg,var(--cyan4),var(--cyan));transition:width 1.5s;position:relative;}
+.vfill::after{content:'';position:absolute;right:0;top:-2px;bottom:-2px;width:1px;background:var(--cyan);box-shadow:0 0 4px var(--cyan);}
+.lscroll{flex:1;overflow-y:auto;scrollbar-width:none;}
+/* MAIN */
+.main{display:grid;grid-template-rows:1fr 1fr;gap:2px;overflow:hidden;min-height:0;}
+.tc{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.tc.active{display:flex;}
+.panel{background:var(--panel);border:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;}
+.pfilt{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;padding:2px 7px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all 0.15s;user-select:none;}
+.pfilt:hover{color:var(--text);}
+.pfilt.active{color:var(--cyan);border-color:var(--cyan3);background:rgba(0,200,200,0.06);}
+.psearch{background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 7px;outline:none;width:120px;}
+.psearch:focus{border-color:var(--cyan);}
+.addbtn{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 8px;border:1px solid var(--cyan3);background:rgba(0,200,200,0.07);color:var(--cyan);cursor:pointer;text-transform:uppercase;transition:all 0.15s;}
+.addbtn:hover{background:rgba(0,200,200,0.15);}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px;padding:7px;overflow-y:auto;flex:1;}
+.pcard{border:1px solid var(--border2);padding:9px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.15s;background:rgba(8,12,16,0.8);}
+.pcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+.pcard.sa::before{background:var(--cyan);}.pcard.sp::before{background:var(--grey);}
+.pcard.sc::before{background:var(--green2);}.pcard.sh::before{background:var(--warn);}
+.pcard:hover{border-color:var(--border3);background:rgba(0,200,200,0.03);}
+.pcard.ov{border-color:rgba(192,40,40,0.3);}
+.pctop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:3px;}
+.pcn{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;color:var(--white);flex:1;}
+.pcb{font-size:7px;padding:1px 4px;border:1px solid;white-space:nowrap;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.pcb.ba{color:var(--cyan);border-color:var(--cyan);}.pcb.bp{color:var(--grey);border-color:var(--grey);}
+.pcb.bc{color:var(--green2);border-color:var(--green2);}.pcb.bh{color:var(--warn);border-color:var(--warn);}
+.pcd{font-size:8px;color:var(--text);margin-bottom:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pcbw{height:1px;background:var(--border);margin-bottom:5px;}
+.pcb2{height:100%;background:linear-gradient(90deg,var(--cyan4),var(--cyan));transition:width 0.5s;}
+.pcf{display:flex;justify-content:space-between;font-size:7px;color:var(--dim);align-items:center;}
+.dlw{color:var(--warn);}.dlo{color:var(--red);}
+.pcai{color:var(--cyan);cursor:pointer;border:1px solid var(--cyan4);padding:1px 4px;transition:all 0.15s;}
+.pcai:hover{background:rgba(0,200,200,0.1);}
+/* CHAT */
+.chat-panel{background:var(--panel);border:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;}
+.cmsgs{flex:1;padding:9px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.cm{display:flex;gap:7px;animation:mi 0.2s ease;}
+@keyframes mi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.cm.u{flex-direction:row-reverse;}
+.ctag{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 5px;border:1px solid var(--border2);align-self:flex-start;margin-top:1px;flex-shrink:0;}
+.cm.a .ctag{color:var(--cyan);background:rgba(0,200,200,0.06);}
+.cm.u .ctag{color:var(--grey);background:rgba(100,130,150,0.06);}
+.cbub{background:rgba(0,200,200,0.03);border:1px solid var(--border2);border-left:2px solid var(--cyan);padding:6px 9px;font-size:10px;line-height:1.7;max-width:82%;color:var(--text2);}
+.cm.u .cbub{border-left:none;border-right:2px solid var(--grey);background:rgba(100,130,150,0.04);}
+.cbub strong{color:var(--cyan);}
+.cbot{padding:7px 9px;border-top:1px solid var(--border2);background:rgba(0,0,0,0.3);flex-shrink:0;}
+.mrow{display:flex;gap:2px;margin-bottom:5px;}
+.mdb{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 7px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all 0.15s;user-select:none;}
+.mdb.on{color:var(--cyan);border-color:var(--cyan3);background:rgba(0,200,200,0.06);}
+.crow{display:flex;gap:5px;}
+.cinp{flex:1;background:rgba(0,0,0,0.4);border:1px solid var(--border2);border-left:2px solid var(--cyan4);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 9px;outline:none;resize:none;height:32px;transition:border-color 0.15s;}
+.cinp:focus{border-color:var(--cyan);border-left-color:var(--cyan);}
+.cinp::placeholder{color:var(--dim);}
+.csend{background:var(--cyan4);border:1px solid var(--cyan);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:6px 12px;cursor:pointer;transition:all 0.15s;white-space:nowrap;text-transform:uppercase;}
+.csend:hover{background:rgba(0,200,200,0.25);}
+.csend:disabled{opacity:0.4;cursor:not-allowed;}
+.typing{display:flex;gap:3px;padding:2px 0;}
+.typing span{width:4px;height:4px;background:var(--cyan);border-radius:50%;animation:td 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:0.2s;}.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes td{0%,60%,100%{opacity:0.2;transform:scale(0.8)}30%{opacity:1;transform:scale(1.2)}}
+/* RIGHT */
+.right{background:var(--panel);border:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;}
+.rtabs{display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;}
+.rt{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;text-align:center;padding:6px 2px;cursor:pointer;color:var(--dim);text-transform:uppercase;border-right:1px solid var(--border2);transition:all 0.15s;position:relative;user-select:none;}
+.rt:last-child{border-right:none;}
+.rt:hover{color:var(--text);}
+.rt.active{color:var(--cyan);background:rgba(0,200,200,0.04);}
+.rt.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--cyan);}
+.rp{display:none;flex:1;overflow-y:auto;flex-direction:column;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.rp.active{display:flex;}
+.wb{padding:12px;}
+.wt{font-family:'Oxanium',sans-serif;font-size:44px;font-weight:800;color:var(--white);line-height:1;}
+.wu{font-size:20px;color:var(--cyan);}
+.wd{font-size:9px;color:var(--text);margin-top:2px;margin-bottom:9px;}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.ws{border:1px solid var(--border);padding:5px;}
+.wsl{font-size:7px;color:var(--dim);letter-spacing:1px;margin-bottom:1px;}
+.wsv{font-size:10px;color:var(--text2);font-weight:600;}
+.wfc{display:flex;gap:3px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.wfd{flex:1;border:1px solid var(--border);padding:4px;text-align:center;}
+.wfdn{font-size:7px;color:var(--dim);margin-bottom:2px;}
+.wfdt{font-size:10px;color:var(--cyan);}
+.nfilt{font-family:'Barlow Condensed',sans-serif;font-size:7px;font-weight:700;letter-spacing:1px;padding:2px 5px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all 0.15s;user-select:none;}
+.nfilt:hover{color:var(--text);}
+.nfilt.active{color:var(--cyan);border-color:var(--cyan3);background:rgba(0,200,200,0.06);}
+.nlist{flex:1;overflow-y:auto;padding:5px 7px;display:flex;flex-direction:column;}
+.ni{padding:7px 3px;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.15s;}
+.ni:last-child{border-bottom:none;}
+.ni:hover{padding-left:6px;background:rgba(0,200,200,0.02);}
+.nh{font-size:10px;color:var(--text2);line-height:1.4;margin-bottom:2px;}
+.nm{font-size:8px;color:var(--dim);display:flex;align-items:center;gap:4px;}
+.ntag{font-size:7px;padding:1px 3px;border:1px solid;}
+.irow{display:flex;align-items:center;gap:5px;padding:5px 6px;border:1px solid var(--border);margin-bottom:2px;cursor:pointer;transition:all 0.15s;font-size:8px;}
+.irow:hover{border-color:var(--border3);background:rgba(0,200,200,0.02);}
+.inm{flex:1;color:var(--text2);font-size:9px;}
+.icat{font-size:7px;color:var(--dim);}
+.iqty{color:var(--cyan);font-size:10px;font-weight:600;min-width:28px;text-align:right;font-family:'Oxanium',sans-serif;}
+.ist{font-size:7px;padding:1px 3px;border:1px solid;white-space:nowrap;}
+.ist.ok{color:var(--green2);border-color:var(--green2);}
+.ist.low{color:var(--warn);border-color:var(--warn);}
+.ist.out{color:var(--red);border-color:var(--red);}
+.ibuy{font-size:7px;color:var(--cyan);cursor:pointer;border:1px solid var(--cyan4);padding:1px 4px;text-decoration:none;white-space:nowrap;transition:all 0.15s;}
+.ibuy:hover{background:rgba(0,200,200,0.1);}
+.ipr{font-size:8px;color:var(--text);}
+.ipr-d{color:var(--green2);}.ipr-r{color:var(--warn);}
+/* MATERIALS */
+.mcard{border:1px solid var(--border2);padding:8px;margin-bottom:4px;cursor:pointer;transition:all 0.15s;}
+.mcard:hover{border-color:var(--border3);background:rgba(0,200,200,0.02);}
+.mn{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;color:var(--white);}
+.mt{font-size:7px;color:var(--dim);border:1px solid var(--border2);padding:1px 4px;}
+.msp{display:flex;gap:8px;font-size:8px;color:var(--text);}
+.msp span{color:var(--cyan);}
+.mai{margin-top:4px;font-size:8px;color:var(--cyan);cursor:pointer;}
+.mai:hover{text-decoration:underline;}
+/* TOOLS */
+.tcard{border:1px solid var(--border2);padding:8px;margin-bottom:4px;transition:all 0.15s;}
+.tcard:hover{border-color:var(--border3);}
+.tnm{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;color:var(--white);}
+.tcaps{display:flex;gap:2px;flex-wrap:wrap;}
+.tcap{font-size:7px;padding:1px 4px;border:1px solid var(--cyan4);color:var(--cyan);}
+/* MATCHER */
+.mbody{padding:10px;display:flex;flex-direction:column;gap:7px;flex:1;overflow-y:auto;}
+.mmbtn{flex:1;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:4px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;text-align:center;transition:all 0.15s;user-select:none;}
+.mmbtn.on{color:var(--cyan);border-color:var(--cyan3);}
+.minp{background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 9px;outline:none;width:100%;transition:border-color 0.15s;}
+.minp:focus{border-color:var(--cyan);}
+.mbtn2{background:var(--cyan4);border:1px solid var(--cyan);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:6px;cursor:pointer;text-transform:uppercase;width:100%;transition:all 0.15s;}
+.mbtn2:hover{background:rgba(0,200,200,0.2);}
+.mres{background:rgba(0,0,0,0.4);border:1px solid var(--border2);border-left:2px solid var(--cyan);padding:9px;font-size:10px;line-height:1.8;color:var(--text2);min-height:80px;}
+.mres .ok{color:var(--green2);}.mres .bad{color:var(--red);}.mres .wrn{color:var(--warn);}
+/* CALC */
+.cbody{padding:9px;display:flex;flex-direction:column;gap:5px;flex:1;overflow-y:auto;}
+.cdisp{background:rgba(0,0,0,0.5);border:1px solid var(--border2);border-left:2px solid var(--cyan);padding:9px 11px;font-family:'Oxanium',sans-serif;font-size:22px;font-weight:800;color:var(--cyan);letter-spacing:2px;min-height:46px;display:flex;flex-direction:column;justify-content:flex-end;}
+.cexpr{font-size:9px;color:var(--dim);font-family:'Share Tech Mono',monospace;margin-bottom:2px;}
+.cnlinp{background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px 9px;outline:none;width:100%;transition:border-color 0.15s;}
+.cnlinp:focus{border-color:var(--cyan);}
+.cnlinp::placeholder{color:var(--dim);}
+.cnlbtn{background:rgba(0,200,200,0.08);border:1px solid var(--cyan3);color:var(--cyan);font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;padding:5px;cursor:pointer;text-transform:uppercase;width:100%;transition:all 0.15s;}
+.cnlbtn:hover{background:rgba(0,200,200,0.15);}
+.ckpad{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;}
+.ck{background:rgba(0,200,200,0.03);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:6px;text-align:center;cursor:pointer;transition:all 0.15s;user-select:none;}
+.ck:hover{background:rgba(0,200,200,0.1);border-color:var(--cyan);color:var(--cyan);}
+.ck:active{background:rgba(0,200,200,0.2);}
+.ck.op{color:var(--cyan);}.ck.fn{font-size:8px;color:var(--grey2);}
+.ck.eq{background:var(--cyan4);border-color:var(--cyan);color:var(--white);}
+.ck.eq:hover{background:rgba(0,200,200,0.3);}
+.engbtns{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;}
+.engb{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;padding:4px 6px;border:1px solid var(--border2);color:var(--text);cursor:pointer;text-align:center;transition:all 0.15s;text-transform:uppercase;user-select:none;}
+.engb:hover{border-color:var(--cyan3);color:var(--cyan);background:rgba(0,200,200,0.05);}
+.chist-list{display:flex;flex-direction:column;gap:2px;max-height:70px;overflow-y:auto;}
+.chi{font-size:8px;color:var(--dim);padding:2px 5px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;}
+.chi:hover{color:var(--text2);border-color:var(--border2);}
+/* DATASHEETS */
+.dsbody{padding:9px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;}
+.dsinp{background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 9px;outline:none;width:100%;transition:border-color 0.15s;}
+.dsinp:focus{border-color:var(--cyan);}
+.dsbtn{background:var(--cyan4);border:1px solid var(--cyan);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;padding:5px;cursor:pointer;text-transform:uppercase;width:100%;transition:all 0.15s;}
+.dsbtn:hover{background:rgba(0,200,200,0.2);}
+.dsres{background:rgba(0,0,0,0.3);border:1px solid var(--border2);border-left:2px solid var(--cyan);padding:8px;font-size:9px;line-height:1.8;color:var(--text2);min-height:60px;}
+.dsres a{color:var(--cyan);text-decoration:none;}
+.dssi{display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid var(--border);cursor:pointer;font-size:9px;transition:all 0.15s;margin-bottom:2px;}
+.dssi:hover{border-color:var(--border2);background:rgba(0,200,200,0.03);}
+.dssn{flex:1;color:var(--text2);}
+/* SETTINGS */
+.sbody{padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;}
+.sg{display:flex;flex-direction:column;gap:5px;}
+.sglbl{font-size:8px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.fi,.fsel,.fta{background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 9px;outline:none;width:100%;transition:border-color 0.15s;}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--cyan);}
+.fta{resize:vertical;min-height:60px;}
+.fsel option{background:var(--panel2);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.flbl{font-size:7px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;}
+.sbtn{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:5px 12px;border:1px solid;cursor:pointer;text-transform:uppercase;transition:all 0.15s;background:none;}
+.sbtn.pr{border-color:var(--cyan);color:var(--cyan);}
+.sbtn.pr:hover{background:rgba(0,200,200,0.1);}
+.sbtn.se{border-color:var(--border2);color:var(--dim);}
+.sbtn.se:hover{color:var(--text);border-color:var(--grey2);}
+.sbtn.da{border-color:var(--red);color:var(--red);}
+.sbtn.da:hover{background:rgba(192,40,40,0.1);}
+.brow{display:flex;gap:5px;flex-wrap:wrap;}
+.kblist{display:flex;flex-direction:column;gap:2px;}
+.kbrow{display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid var(--border);font-size:9px;cursor:pointer;transition:all 0.15s;}
+.kbrow:hover{border-color:var(--border2);}
+.kbrow.ed{border-color:var(--cyan);background:rgba(0,200,200,0.05);}
+.kba{flex:1;color:var(--text2);}
+.kbk{color:var(--cyan);border:1px solid var(--cyan4);padding:1px 6px;font-size:8px;background:rgba(0,200,200,0.06);}
+.kbk.wait{color:var(--warn);border-color:var(--warn);animation:pulse 0.8s infinite;}
+.dimsl{width:100%;accent-color:var(--cyan);}
+/* SUGGESTIONS */
+.sqfab{position:fixed;bottom:44px;right:8px;z-index:500;background:var(--cyan4);border:1px solid var(--cyan);color:var(--cyan);font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;padding:5px 10px;cursor:pointer;transition:all 0.15s;animation:sqp 3s infinite;display:none;}
+@keyframes sqp{0%,100%{box-shadow:0 0 10px rgba(0,200,200,0.15)}50%{box-shadow:0 0 20px rgba(0,200,200,0.3)}}
+.sqpanel{position:fixed;bottom:82px;right:8px;width:300px;background:var(--panel2);border:1px solid var(--cyan);z-index:501;display:none;flex-direction:column;max-height:380px;box-shadow:0 0 30px rgba(0,200,200,0.15);}
+.sqpanel.open{display:flex;}
+.sqhdr{padding:7px 10px;border-bottom:1px solid var(--border2);display:flex;align-items:center;}
+.sqt{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:900;letter-spacing:2px;color:var(--cyan);}
+.sqx{margin-left:auto;color:var(--dim);cursor:pointer;font-size:13px;}
+.sqx:hover{color:var(--red);}
+.sqitems{flex:1;overflow-y:auto;padding:5px;}
+.sqi{border:1px solid var(--border2);border-left:2px solid var(--cyan4);padding:7px;margin-bottom:3px;}
+.sqic{font-size:7px;color:var(--cyan);letter-spacing:2px;margin-bottom:2px;}
+.sqit{font-size:9px;color:var(--text2);line-height:1.5;margin-bottom:5px;}
+.sqibs{display:flex;gap:3px;}
+.sqapp{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;padding:2px 7px;border:1px solid var(--green2);color:var(--green2);cursor:pointer;text-transform:uppercase;background:none;transition:all 0.15s;}
+.sqapp:hover{background:rgba(64,200,120,0.1);}
+.sqdis{font-family:'Barlow Condensed',sans-serif;font-size:8px;font-weight:700;padding:2px 7px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;background:none;transition:all 0.15s;}
+.sqdis:hover{color:var(--red);border-color:var(--red);}
+/* COMMAND BAR */
+.cov{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:800;display:none;}
+.cov.open{display:block;}
+.cbar{position:fixed;top:70px;left:50%;transform:translateX(-50%);width:620px;background:var(--panel2);border:1px solid var(--cyan);z-index:801;display:none;box-shadow:0 0 50px rgba(0,200,200,0.2),0 20px 50px rgba(0,0,0,0.8);}
+.cbar.open{display:block;}
+.cir{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border2);}
+.cico{color:var(--cyan);font-size:13px;}
+.cin{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:'Share Tech Mono',monospace;font-size:12px;}
+.chint{font-size:8px;color:var(--dim);letter-spacing:1px;}
+.crs{padding:5px;}
+.cr{display:flex;align-items:center;gap:9px;padding:6px 8px;border:1px solid transparent;cursor:pointer;transition:all 0.1s;font-size:9px;}
+.cr:hover,.cr.sel{border-color:var(--border2);background:rgba(0,200,200,0.06);}
+.cri{font-size:12px;flex-shrink:0;}
+.crm{flex:1;color:var(--text2);}
+.crt{font-size:7px;padding:1px 4px;border:1px solid var(--cyan4);color:var(--cyan);white-space:nowrap;}
+/* QUICK CAPTURE */
+.qcfab{position:fixed;bottom:44px;left:8px;z-index:500;background:rgba(0,200,200,0.1);border:1px solid var(--cyan4);color:var(--cyan);font-family:'Oxanium',sans-serif;font-size:14px;font-weight:800;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;}
+.qcfab:hover{background:rgba(0,200,200,0.2);}
+.qcpanel{position:fixed;bottom:82px;left:8px;width:260px;background:var(--panel2);border:1px solid var(--cyan);z-index:501;display:none;flex-direction:column;}
+.qcpanel.open{display:flex;}
+.qch{padding:6px 9px;border-bottom:1px solid var(--border2);font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:900;letter-spacing:2px;color:var(--cyan);}
+.qci{background:rgba(0,0,0,0.5);border:none;border-bottom:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:9px;outline:none;resize:none;height:70px;width:100%;}
+.qcf{padding:5px 7px;display:flex;gap:3px;border-top:1px solid var(--border2);}
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:700;display:none;align-items:center;justify-content:center;}
+.mo.open{display:flex;}
+.mdl{background:var(--panel2);border:1px solid var(--border2);border-left:2px solid var(--cyan);width:520px;max-height:80vh;display:flex;flex-direction:column;}
+.mhdr{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border2);}
+.mtitle{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:900;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;}
+.mx{margin-left:auto;color:var(--dim);cursor:pointer;font-size:15px;}
+.mx:hover{color:var(--red);}
+.mbody{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.mftr{display:flex;gap:5px;padding:9px 12px;border-top:1px solid var(--border2);}
+.mb{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;text-transform:uppercase;transition:all 0.15s;}
+.mb.pr{border-color:var(--cyan);color:var(--white);background:var(--cyan4);}
+.mb.pr:hover{background:rgba(0,200,200,0.3);}
+.mb.se{border-color:var(--border2);color:var(--dim);background:none;}
+.mb.se:hover{color:var(--text);}
+/* PROJECT DETAIL */
+.pdo{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:600;display:none;align-items:center;justify-content:center;}
+.pdo.open{display:flex;}
+.pdi{background:var(--panel2);border:1px solid var(--border2);border-left:2px solid var(--cyan);width:780px;max-height:86vh;display:flex;flex-direction:column;}
+.pdh{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border2);gap:8px;}
+.pdn{font-family:'Oxanium',sans-serif;font-size:18px;font-weight:800;color:var(--white);}
+.pdtabs{display:flex;gap:2px;margin-left:auto;}
+.pdt{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;padding:3px 9px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;text-transform:uppercase;transition:all 0.15s;user-select:none;}
+.pdt.on{color:var(--cyan);border-color:var(--cyan3);}
+.pdx{color:var(--dim);cursor:pointer;font-size:17px;margin-left:6px;}
+.pdx:hover{color:var(--red);}
+.pdbody{flex:1;overflow-y:auto;padding:11px;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.pdsec{margin-bottom:12px;}
+.pdsl{font-size:7px;color:var(--dim);letter-spacing:2px;margin-bottom:5px;border-bottom:1px solid var(--border);padding-bottom:3px;}
+.chki{display:flex;align-items:flex-start;gap:7px;padding:5px 7px;border:1px solid var(--border);margin-bottom:2px;cursor:pointer;transition:all 0.15s;}
+.chki:hover{border-color:var(--border2);}
+.chki.dn{opacity:0.5;}
+.chkb{width:13px;height:13px;border:1px solid var(--text);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.chki.dn .chkb{background:var(--green2);border-color:var(--green2);color:#000;}
+.chkt{flex:1;font-size:9px;line-height:1.5;}
+.chkn{font-size:8px;color:var(--dim);margin-top:1px;}
+.chkp{font-size:7px;padding:1px 3px;border:1px solid;}
+.bomr{display:flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid var(--border);margin-bottom:2px;font-size:8px;}
+.bomn{flex:1;color:var(--text2);}
+.bomq{color:var(--cyan);min-width:28px;font-family:'Oxanium',sans-serif;}
+.bomh{display:flex;align-items:center;gap:3px;cursor:pointer;}
+.bomhb{width:11px;height:11px;border:1px solid var(--text);display:flex;align-items:center;justify-content:center;font-size:7px;}
+.bomh.ch .bomhb{background:var(--green2);border-color:var(--green2);color:#000;}
+.bomp{color:var(--text);font-size:8px;min-width:50px;text-align:right;}
+.tmrw{display:flex;align-items:center;gap:9px;padding:7px;background:rgba(0,0,0,0.3);border:1px solid var(--border);}
+.tmrd{font-family:'Oxanium',sans-serif;font-size:26px;font-weight:800;color:var(--cyan);letter-spacing:3px;}
+.tmrb{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 9px;border:1px solid;cursor:pointer;text-transform:uppercase;transition:all 0.15s;background:none;}
+.tmrb.st{border-color:var(--green2);color:var(--green2);}
+.tmrb.st:hover{background:rgba(64,200,120,0.1);}
+.tmrb.sp{border-color:var(--red);color:var(--red);}
+.tmrb.sp:hover{background:rgba(192,40,40,0.1);}
+.loge{font-size:8px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5;}
+.logts{color:var(--dim);font-size:7px;}
+.tmplc{border:1px solid var(--border2);padding:8px;margin-bottom:4px;cursor:pointer;transition:all 0.15s;}
+.tmplc:hover{border-color:var(--cyan3);background:rgba(0,200,200,0.03);}
+.tmpln{font-family:'Oxanium',sans-serif;font-size:11px;font-weight:800;color:var(--white);margin-bottom:3px;}
+.tmplm{font-size:8px;color:var(--dim);}
+/* FOOTER */
+.ftr{grid-column:1/-1;background:var(--panel2);border:1px solid var(--border2);border-left:3px solid var(--cyan4);display:flex;align-items:center;padding:0 11px;gap:12px;font-size:7px;letter-spacing:1px;color:var(--dim);position:relative;overflow:hidden;}
+.ftr::after{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,var(--cyan),transparent);}
+.fi2{display:flex;align-items:center;gap:3px;}
+.fb{color:var(--cyan);}
+.fsep{color:var(--border2);}
+.ftick{flex:1;overflow:hidden;position:relative;}
+.ftick::before,.ftick::after{content:'';position:absolute;top:0;bottom:0;width:16px;z-index:2;}
+.ftick::before{left:0;background:linear-gradient(90deg,var(--panel2),transparent);}
+.ftick::after{right:0;background:linear-gradient(-90deg,var(--panel2),transparent);}
+.fscr{display:inline-block;white-space:nowrap;animation:ftk 60s linear infinite;}
+@keyframes ftk{from{transform:translateX(100%)}to{transform:translateX(-200%)}}
+.fr2{margin-left:auto;display:flex;align-items:center;gap:10px;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);}
+::-webkit-scrollbar-thumb:hover{background:var(--grey2);}
+.toast{position:fixed;bottom:46px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--cyan);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 14px;z-index:9999;white-space:nowrap;pointer-events:none;animation:tin 0.2s ease;}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:14px;vertical-align:middle;margin-left:4px;}
+.spk{width:3px;background:var(--cyan4);min-height:2px;}
+</style>
+</head>
+<body>
+<div class="gl"></div>
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
+<!-- CMD -->
+<div class="cov" id="cov" onclick="closeCmd()"></div>
+<div class="cbar" id="cbar">
+  <div class="cir"><span class="cico">⌕</span><input class="cin" id="cin" placeholder="Command, search, or ask anything..." oninput="cmdSearch(this.value)" onkeydown="cmdKey(event)"><span class="chint">ESC TO CLOSE</span></div>
+  <div class="crs" id="crs"></div>
+</div>
+<!-- SQ -->
+<div class="sqfab" id="sqfab" onclick="toggleSQ()">⚡ <span id="sqn">0</span> SUGGESTIONS</div>
+<div class="sqpanel" id="sqpanel">
+  <div class="sqhdr"><span class="sqt">AI SUGGESTIONS</span><span class="sqx" onclick="toggleSQ()">✕</span></div>
+  <div class="sqitems" id="sqitems"><div style="padding:14px;text-align:center;font-size:9px;color:var(--dim);">// Scanning...</div></div>
+</div>
+<!-- QC -->
+<div class="qcfab" onclick="toggleQC()">+</div>
+<div class="qcpanel" id="qcpanel">
+  <div class="qch">// QUICK CAPTURE</div>
+  <textarea class="qci" id="qci" placeholder="Note, part, measurement, idea..."></textarea>
+  <div class="qcf">
+    <button class="sbtn pr" style="font-size:8px;padding:3px 9px;" onclick="submitQC()">CAPTURE</button>
+    <button class="sbtn se" style="font-size:8px;padding:3px 9px;" onclick="toggleQC()">CANCEL</button>
+  </div>
+</div>
+<!-- PROJECT DETAIL -->
+<div class="pdo" id="pdo">
+  <div class="pdi">
+    <div class="pdh">
+      <div class="pdn" id="pdname">PROJECT</div>
+      <div class="pdtabs">
+        <div class="pdt on" onclick="switchPDTab(this,'overview')">OVERVIEW</div>
+        <div class="pdt" onclick="switchPDTab(this,'checklist')">CHECKLIST</div>
+        <div class="pdt" onclick="switchPDTab(this,'bom')">BOM</div>
+        <div class="pdt" onclick="switchPDTab(this,'log')">LOG</div>
+      </div>
+      <span class="pdx" onclick="closePD()">✕</span>
+    </div>
+    <div class="pdbody" id="pdbody"></div>
+  </div>
+</div>
+<!-- MODALS -->
+<div class="mo" id="mProj">
+  <div class="mdl"><div class="mhdr"><span class="mtitle">NEW PROJECT</span><span class="mx" onclick="cm('mProj')">✕</span></div>
+  <div class="mbody">
+    <div class="fg"><div class="flbl">NAME</div><input class="fi" id="np-name" placeholder="e.g. CNC Router V2"></div>
+    <div class="fg"><div class="flbl">DESCRIPTION</div><textarea class="fta" id="np-desc" placeholder="What are you building?"></textarea></div>
+    <div class="fr">
+      <div class="fg"><div class="flbl">STATUS</div><select class="fsel" id="np-status"><option value="planning">PLANNING</option><option value="active">ACTIVE</option><option value="hold">ON HOLD</option><option value="complete">COMPLETE</option></select></div>
+      <div class="fg"><div class="flbl">PRIORITY</div><select class="fsel" id="np-pri"><option value="high">HIGH</option><option value="med">MEDIUM</option><option value="low">LOW</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><div class="flbl">DEADLINE</div><input class="fi" id="np-dl" type="date"></div>
+      <div class="fg"><div class="flbl">TEMPLATE</div><select class="fsel" id="np-tmpl"><option value="">None</option></select></div>
+    </div>
+    <div id="tmpl-prev" style="display:none;font-size:8px;color:var(--dim);padding:6px;border:1px solid var(--border2);border-left:2px solid var(--cyan);line-height:1.8;"></div>
+  </div>
+  <div class="mftr"><button class="mb pr" onclick="saveProject()">CREATE</button><button class="mb se" onclick="cm('mProj')">CANCEL</button></div></div>
+</div>
+<div class="mo" id="mInv">
+  <div class="mdl"><div class="mhdr"><span class="mtitle">ADD INVENTORY ITEM</span><span class="mx" onclick="cm('mInv')">✕</span></div>
+  <div class="mbody">
+    <div class="fr"><div class="fg"><div class="flbl">NAME</div><input class="fi" id="ni-name" placeholder="e.g. ATmega2560"></div><div class="fg"><div class="flbl">PART #</div><input class="fi" id="ni-pn" placeholder="e.g. ATMEGA2560-16AU"></div></div>
+    <div class="fr"><div class="fg"><div class="flbl">CATEGORY</div><select class="fsel" id="ni-cat"><option>ELECTRONICS</option><option>FASTENERS</option><option>MECHANICAL</option><option>TOOLS</option><option>CONSUMABLES</option><option>OTHER</option></select></div><div class="fg"><div class="flbl">SUPPLIER</div><select class="fsel" id="ni-sup"><option>DigiKey</option><option>Amazon</option><option>AliExpress</option><option>McMaster-Carr</option><option>Local</option><option>Other</option></select></div></div>
+    <div class="fr"><div class="fg"><div class="flbl">QTY HAVE</div><input class="fi" id="ni-have" type="number" min="0" placeholder="0"></div><div class="fg"><div class="flbl">QTY NEED</div><input class="fi" id="ni-need" type="number" min="0" placeholder="0"></div></div>
+    <div class="fr"><div class="fg"><div class="flbl">PRICE (CAD)</div><input class="fi" id="ni-price" placeholder="0.00"></div><div class="fg"><div class="flbl">TARGET PRICE</div><input class="fi" id="ni-target" placeholder="Alert when below..."></div></div>
+    <div class="fg"><div class="flbl">NOTES</div><input class="fi" id="ni-notes" placeholder="Specs, part details..."></div>
+  </div>
+  <div class="mftr"><button class="mb pr" onclick="saveInv()">ADD ITEM</button><button class="mb se" onclick="cm('mInv')">CANCEL</button></div></div>
+</div>
+<div class="mo" id="mMat">
+  <div class="mdl"><div class="mhdr"><span class="mtitle">ADD MATERIAL</span><span class="mx" onclick="cm('mMat')">✕</span></div>
+  <div class="mbody">
+    <div class="fr"><div class="fg"><div class="flbl">NAME</div><input class="fi" id="nm-name" placeholder="e.g. 6061-T6 Aluminum"></div><div class="fg"><div class="flbl">TYPE</div><select class="fsel" id="nm-type"><option>METAL</option><option>FILAMENT</option><option>WOOD</option><option>PCB STOCK</option><option>WIRE</option><option>FASTENERS</option><option>ADHESIVE</option><option>OTHER</option></select></div></div>
+    <div class="fr"><div class="fg"><div class="flbl">QUANTITY</div><input class="fi" id="nm-qty" placeholder="e.g. 2.4m"></div><div class="fg"><div class="flbl">DIMENSIONS</div><input class="fi" id="nm-dims" placeholder="e.g. 20x20mm"></div></div>
+    <div class="fr"><div class="fg"><div class="flbl">CONDITION</div><select class="fsel" id="nm-cond"><option>NEW</option><option>GOOD</option><option>USED</option><option>DEGRADED</option></select></div><div class="fg"><div class="flbl">NOTES</div><input class="fi" id="nm-notes" placeholder="Color, grade, location..."></div></div>
+  </div>
+  <div class="mftr"><button class="mb pr" onclick="saveMat()">ADD</button><button class="mb se" onclick="cm('mMat')">CANCEL</button></div></div>
+</div>
+<div class="mo" id="mTool">
+  <div class="mdl"><div class="mhdr"><span class="mtitle">ADD TOOL</span><span class="mx" onclick="cm('mTool')">✕</span></div>
+  <div class="mbody">
+    <div class="fr"><div class="fg"><div class="flbl">NAME</div><input class="fi" id="nt-name" placeholder="e.g. Drill Press"></div><div class="fg"><div class="flbl">CONDITION</div><select class="fsel" id="nt-cond"><option>EXCELLENT</option><option>GOOD</option><option>FAIR</option><option>NEEDS SERVICE</option></select></div></div>
+    <div class="fg"><div class="flbl">CAPABILITIES (comma separated)</div><input class="fi" id="nt-caps" placeholder="e.g. DRILL, PRESS FIT, COUNTERSINK"></div>
+    <div class="fg"><div class="flbl">NOTES</div><input class="fi" id="nt-notes" placeholder="Brand, model, limitations..."></div>
+  </div>
+  <div class="mftr"><button class="mb pr" onclick="saveTool()">ADD</button><button class="mb se" onclick="cm('mTool')">CANCEL</button></div></div>
+</div>
+<div class="mo" id="mCalc">
+  <div class="mdl" style="width:460px;"><div class="mhdr"><span class="mtitle" id="calc-mtitle">CALCULATOR</span><span class="mx" onclick="cm('mCalc')">✕</span></div>
+  <div class="mbody" id="calc-mbody"></div>
+  <div class="mftr"><button class="mb pr" onclick="runEngCalc()">CALCULATE</button><button class="mb se" onclick="cm('mCalc')">CLOSE</button></div></div>
+</div>
+<!-- SHELL -->
+<div class="shell">
+<header class="hdr">
+  <div class="logo">Maker<em>.</em>OS</div>
+  <div class="hdiv"></div>
+  <nav class="nav-tabs">
+    <div class="ntab active" onclick="switchTab('command',this)">COMMAND</div>
+    <div class="ntab" onclick="switchTab('projects',this)">PROJECTS <span class="ab" id="bp" style="display:none">⚡</span></div>
+    <div class="ntab" onclick="switchTab('inventory',this)">INVENTORY <span class="ab" id="bi" style="display:none">⚡</span></div>
+    <div class="ntab" onclick="switchTab('materials',this)">MATERIALS</div>
+    <div class="ntab" onclick="switchTab('tools',this)">TOOLS</div>
+    <div class="ntab" onclick="switchTab('matcher',this)">MATCHER</div>
+    <div class="ntab" onclick="switchTab('calculator',this)">CALCULATOR</div>
+    <div class="ntab" onclick="switchTab('news',this)">NEWS</div>
+    <div class="ntab" onclick="switchTab('launcher',this)">LAUNCHER</div>
+    <div class="ntab" onclick="switchTab('settings',this)">SETTINGS</div>
+  </nav>
+  <div class="hdr-r">
+    <div class="spill"><div class="sdot" id="aidot"></div><span id="aitxt">CHECKING</span></div>
+    <div class="hstat"><div class="sv" id="hcpu">--%</div><div class="sl">CPU</div></div>
+    <div class="hstat"><div class="sv" id="hgpu">--%</div><div class="sl">GPU</div></div>
+    <div class="hstat"><div class="sv" id="hram">--%</div><div class="sl">RAM</div></div>
+    <div class="dimbtn" id="dimbtn" onclick="toggleDim()">DIM</div>
+    <div class="clk" id="clk">00:00:00</div>
+  </div>
+</header>
+<aside class="left">
+  <div class="phdr"><div class="phdr-t">OPERATIONS</div><div class="phdr-id">NODE-01</div></div>
+  <div class="sec">
+    <div class="slbl">// QUICK LAUNCH</div>
+    <div class="agrid" id="appgrid">
+      <a class="atile" href="https://cad.onshape.com" target="_blank"><div class="ti">🔷</div><div class="tn">ONSHAPE</div></a>
+      <a class="atile" href="https://www.arduino.cc/en/software" target="_blank"><div class="ti">⚡</div><div class="tn">ARDUINO</div></a>
+      <a class="atile" href="https://ultimaker.com/software/ultimaker-cura" target="_blank"><div class="ti">🖨️</div><div class="tn">CURA</div></a>
+      <a class="atile" href="https://processing.org/download" target="_blank"><div class="ti">💻</div><div class="tn">PROCESS</div></a>
+      <a class="atile" href="https://store.steampowered.com" target="_blank"><div class="ti">🎮</div><div class="tn">STEAM</div></a>
+      <a class="atile" href="https://www.xbox.com/en-CA/apps/xbox-app-for-pc" target="_blank"><div class="ti">🎯</div><div class="tn">XBOX</div></a>
+      <a class="atile" href="https://www.digikey.ca" target="_blank"><div class="ti">📦</div><div class="tn">DIGIKEY</div></a>
+      <a class="atile" href="https://www.amazon.ca" target="_blank"><div class="ti">📫</div><div class="tn">AMAZON</div></a>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="slbl">// SYSTEM VITALS</div>
+    <div class="vitals">
+      <div class="vrow"><div class="vtop"><span class="vlbl">CPU // RYZEN 9</span><span class="vval" id="cpuv">--%</span></div><div class="vtrack"><div class="vfill" id="cpub" style="width:0%"></div></div></div>
+      <div class="vrow"><div class="vtop"><span class="vlbl">GPU // RX 9060XT</span><span class="vval" id="gpuv">--%</span></div><div class="vtrack"><div class="vfill" id="gpub" style="width:0%"></div></div></div>
+      <div class="vrow"><div class="vtop"><span class="vlbl">RAM // 32GB</span><span class="vval" id="ramv">--%</span></div><div class="vtrack"><div class="vfill" id="ramb" style="width:0%"></div></div></div>
+      <div class="vrow"><div class="vtop"><span class="vlbl">SSD // 1.5TB</span><span class="vval">38%</span></div><div class="vtrack"><div class="vfill" style="width:38%"></div></div></div>
+    </div>
+  </div>
+  <div class="lscroll">
+    <div class="sec" style="border-bottom:none;">
+      <div class="slbl">// FILE STORAGE</div>
+      <div id="fsstatus" style="font-size:8px;color:var(--dim);line-height:1.8;">No folder selected.<br><span style="color:var(--cyan);cursor:pointer;" onclick="chooseFolder()">// CLICK TO SELECT FOLDER</span></div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <!-- COMMAND -->
+  <div class="tc active" id="tc-command" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr">
+        <div class="phdr-t">PROJECTS</div>
+        <div style="margin-left:8px;display:flex;gap:2px;">
+          <div class="pfilt active" onclick="fproj('all',this)">ALL</div>
+          <div class="pfilt" onclick="fproj('active',this)">ACTIVE</div>
+          <div class="pfilt" onclick="fproj('planning',this)">PLAN</div>
+          <div class="pfilt" onclick="fproj('hold',this)">HOLD</div>
+          <div class="pfilt" onclick="fproj('complete',this)">DONE</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:3px;align-items:center;">
+          <input class="psearch" id="ps1" placeholder="// search..." oninput="renderProjects()">
+          <button class="addbtn" onclick="om('mProj')">+ NEW</button>
+        </div>
+      </div>
+      <div class="pgrid" id="pg1"></div>
+    </div>
+    <div class="chat-panel">
+      <div class="phdr"><div class="phdr-t">AI ASSISTANT</div><div style="margin-left:auto;"><div class="phdr-id" id="aiconn" style="color:var(--dim);">● CHECKING...</div></div></div>
+      <div class="cmsgs" id="chat"></div>
+      <div class="cbot">
+        <div class="mrow">
+          <div class="mdb on" onclick="setMode(this,'GENERAL')">GENERAL</div>
+          <div class="mdb" onclick="setMode(this,'DESIGN')">DESIGN</div>
+          <div class="mdb" onclick="setMode(this,'FABRICATE')">FABRICATE</div>
+          <div class="mdb" onclick="setMode(this,'CODE')">CODE</div>
+          <div class="mdb" onclick="setMode(this,'CALC')">CALC</div>
+        </div>
+        <div class="crow">
+          <textarea class="cinp" id="chatinp" placeholder="// Ask anything..." onkeydown="chatKey(event)" rows="1"></textarea>
+          <button class="csend" id="sendbtn" onclick="sendChat()">SEND ▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- PROJECTS -->
+  <div class="tc" id="tc-projects" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr">
+        <div class="phdr-t">ALL PROJECTS</div>
+        <div style="margin-left:8px;display:flex;gap:2px;">
+          <div class="pfilt active" onclick="fproj('all',this)">ALL</div>
+          <div class="pfilt" onclick="fproj('active',this)">ACTIVE</div>
+          <div class="pfilt" onclick="fproj('planning',this)">PLANNING</div>
+          <div class="pfilt" onclick="fproj('hold',this)">ON HOLD</div>
+          <div class="pfilt" onclick="fproj('complete',this)">COMPLETE</div>
+          <div class="pfilt" onclick="fproj('overdue',this)">OVERDUE</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:3px;align-items:center;">
+          <input class="psearch" id="ps2" placeholder="// search..." oninput="renderProjects()">
+          <button class="addbtn" onclick="om('mProj')">+ NEW PROJECT</button>
+        </div>
+      </div>
+      <div class="pgrid" id="pg2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));"></div>
+    </div>
+  </div>
+  <!-- INVENTORY -->
+  <div class="tc" id="tc-inventory" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr">
+        <div class="phdr-t">INVENTORY</div>
+        <div id="invstats" style="margin-left:8px;font-size:7px;color:var(--dim);"></div>
+        <div style="margin-left:auto;display:flex;gap:3px;">
+          <button class="addbtn" onclick="refreshPrices()">↻ PRICES</button>
+          <button class="addbtn" onclick="om('mInv')">+ ADD ITEM</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:2px;padding:5px 7px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <div class="pfilt active" onclick="finv('all',this)">ALL</div>
+        <div class="pfilt" onclick="finv('low',this)">LOW</div>
+        <div class="pfilt" onclick="finv('out',this)">OUT</div>
+        <div class="pfilt" onclick="finv('ok',this)">OK</div>
+      </div>
+      <div class="inv-toolbar" style="display:flex;gap:3px;padding:5px 7px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <input class="inv-search" id="invsearch" style="flex:1;background:rgba(0,0,0,0.4);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 7px;outline:none;" placeholder="// search inventory..." oninput="renderInv()">
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:5px 7px;" id="invlist"></div>
+    </div>
+  </div>
+  <!-- MATERIALS -->
+  <div class="tc" id="tc-materials" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">MATERIALS LIBRARY</div><div style="margin-left:auto;"><button class="addbtn" onclick="om('mMat')">+ ADD MATERIAL</button></div></div>
+      <div style="flex:1;overflow-y:auto;padding:7px;" id="matlist"><div style="color:var(--dim);font-size:9px;padding:16px;">// No materials logged yet.</div></div>
+    </div>
+  </div>
+  <!-- TOOLS -->
+  <div class="tc" id="tc-tools" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">TOOL LIBRARY</div><div style="margin-left:auto;"><button class="addbtn" onclick="om('mTool')">+ ADD TOOL</button></div></div>
+      <div style="flex:1;overflow-y:auto;padding:7px;" id="toollist"><div style="color:var(--dim);font-size:9px;padding:16px;">// No tools logged yet.</div></div>
+    </div>
+  </div>
+  <!-- MATCHER -->
+  <div class="tc" id="tc-matcher" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">SMART MATCHER</div><div class="phdr-id">AI-POWERED</div></div>
+      <div class="mbody">
+        <div style="display:flex;gap:3px;">
+          <div class="mmbtn on" onclick="switchMM(this,'material')">MATERIAL → TOOLS</div>
+          <div class="mmbtn" onclick="switchMM(this,'project')">PROJECT → TOOLS + MATS</div>
+        </div>
+        <div style="font-size:8px;color:var(--dim);">// Describe what you want to work on. AI checks your libraries.</div>
+        <input class="minp" id="matchinp" placeholder="e.g. 'machine 6061 aluminum bracket' or 'build a PCB enclosure'">
+        <button class="mbtn2" onclick="runMatcher()">RUN ANALYSIS ▶</button>
+        <div class="mres" id="matchres">// Enter description and run analysis.</div>
+      </div>
+    </div>
+  </div>
+  <!-- CALCULATOR -->
+  <div class="tc" id="tc-calculator" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">UNIVERSAL CALCULATOR</div><div class="phdr-id">AI + ENGINEERING</div></div>
+      <div class="cbody">
+        <div class="cdisp"><div class="cexpr" id="cexpr">// ENTER EXPRESSION OR NATURAL LANGUAGE</div><div id="cres">0</div></div>
+        <input class="cnlinp" id="cnlinp" placeholder="e.g. '5 kg to lbs'  '240v * 15a'  'ohms law 12v 220 ohm'" onkeydown="if(event.key==='Enter')runCalc()">
+        <button class="cnlbtn" onclick="runCalc()">CALCULATE / CONVERT ▶</button>
+        <div class="ckpad">
+          <div class="ck fn" onclick="ck('(')">(</div><div class="ck fn" onclick="ck(')')">)</div><div class="ck fn" onclick="ck('%')">%</div><div class="ck op" onclick="clearCalc()">CLR</div>
+          <div class="ck" onclick="ck('7')">7</div><div class="ck" onclick="ck('8')">8</div><div class="ck" onclick="ck('9')">9</div><div class="ck op" onclick="ck('/')">÷</div>
+          <div class="ck" onclick="ck('4')">4</div><div class="ck" onclick="ck('5')">5</div><div class="ck" onclick="ck('6')">6</div><div class="ck op" onclick="ck('*')">×</div>
+          <div class="ck" onclick="ck('1')">1</div><div class="ck" onclick="ck('2')">2</div><div class="ck" onclick="ck('3')">3</div><div class="ck op" onclick="ck('-')">−</div>
+          <div class="ck" onclick="ck('0')">0</div><div class="ck" onclick="ck('.')">.</div><div class="ck fn" onclick="bksp()">⌫</div><div class="ck op" onclick="ck('+')">+</div>
+          <div class="ck eq" style="grid-column:1/-1;" onclick="evalCalc()">=</div>
+        </div>
+        <div class="slbl">// ENGINEERING SHORTCUTS</div>
+        <div class="engbtns">
+          <div class="engb" onclick="openEng('ohm')">OHM'S LAW</div>
+          <div class="engb" onclick="openEng('vdiv')">VOLTAGE DIVIDER</div>
+          <div class="engb" onclick="openEng('beam')">BEAM DEFLECTION</div>
+          <div class="engb" onclick="openEng('mass')">PART MASS</div>
+          <div class="engb" onclick="openEng('gear')">GEAR RATIO</div>
+          <div class="engb" onclick="openEng('stepper')">STEPPER STEPS/MM</div>
+          <div class="engb" onclick="openEng('wire')">WIRE CURRENT</div>
+          <div class="engb" onclick="openEng('pwm')">PWM FREQUENCY</div>
+        </div>
+        <div class="slbl">// HISTORY</div>
+        <div class="chist-list" id="chist"></div>
+      </div>
+    </div>
+  </div>
+  <!-- NEWS -->
+  <div class="tc" id="tc-news" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">TRENDING NEWS</div><div class="phdr-id" id="newsts"></div></div>
+      <div style="display:flex;gap:2px;padding:5px 7px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;">
+        <div class="nfilt active" onclick="fntime('all',this)">ALL</div>
+        <div class="nfilt" onclick="fntime('1h',this)">1H</div>
+        <div class="nfilt" onclick="fntime('6h',this)">6H</div>
+        <div class="nfilt" onclick="fntime('24h',this)">24H</div>
+        <div class="nfilt" onclick="fntime('3d',this)">3D</div>
+        <div class="nfilt" onclick="fntime('1w',this)">1W</div>
+        <div style="width:1px;background:var(--border2);margin:0 3px;"></div>
+        <div class="nfilt" onclick="fntopic('tech',this)">TECH</div>
+        <div class="nfilt" onclick="fntopic('gaming',this)">GAMING</div>
+        <div class="nfilt" onclick="fntopic('science',this)">SCIENCE</div>
+        <div class="nfilt" onclick="fntopic('electronics',this)">ELECTRONICS</div>
+        <div class="nfilt" onclick="fntopic('making',this)">MAKING</div>
+        <div class="nfilt" onclick="fntopic('world',this)">WORLD</div>
+        <button class="addbtn" style="margin-left:auto;" onclick="loadNews()">↻ REFRESH</button>
+      </div>
+      <div class="nlist" id="newslist"><div style="padding:14px;color:var(--dim);font-size:9px;">// Loading news...</div></div>
+    </div>
+  </div>
+  <!-- LAUNCHER -->
+  <div class="tc" id="tc-launcher" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">APPLICATION LAUNCHER</div><div style="margin-left:auto;"><button class="addbtn" onclick="addTile()">+ ADD TILE</button></div></div>
+      <div id="launchgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:14px;overflow-y:auto;flex:1;"></div>
+    </div>
+  </div>
+  <!-- SETTINGS -->
+  <div class="tc" id="tc-settings" style="grid-row:1/-1;">
+    <div class="panel" style="flex:1;">
+      <div class="phdr"><div class="phdr-t">SETTINGS</div></div>
+      <div class="sbody">
+        <div class="sg">
+          <div class="sglbl">FILE STORAGE</div>
+          <div style="display:flex;gap:5px;">
+            <input class="fi" id="folderpath" placeholder="// No folder selected" readonly style="flex:1;cursor:pointer;" onclick="chooseFolder()">
+            <button class="sbtn pr" onclick="chooseFolder()">CHOOSE FOLDER</button>
+          </div>
+          <div style="font-size:8px;color:var(--dim);">All data saves as JSON files in your chosen folder.</div>
+        </div>
+        <div class="sg">
+          <div class="sglbl">BACKUP & RESTORE</div>
+          <div class="brow">
+            <button class="sbtn pr" onclick="exportAll()">EXPORT JSON BACKUP</button>
+            <button class="sbtn se" onclick="importData()">IMPORT BACKUP</button>
+          </div>
+        </div>
+        <div class="sg">
+          <div class="sglbl">UNITS PROFILE</div>
+          <div class="fr">
+            <div class="fg"><div class="flbl">MEASUREMENT</div><select class="fsel" id="umeas" onchange="saveSettings()"><option value="metric">METRIC</option><option value="imperial">IMPERIAL</option><option value="mixed">MIXED</option></select></div>
+            <div class="fg"><div class="flbl">CURRENCY</div><select class="fsel" id="ucurr" onchange="saveSettings()"><option value="CAD">CAD</option><option value="USD">USD</option></select></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><div class="flbl">TORQUE</div><select class="fsel" id="utorque" onchange="saveSettings()"><option value="nm">N·m</option><option value="lbft">lb·ft</option></select></div>
+            <div class="fg"><div class="flbl">PRESSURE</div><select class="fsel" id="upres" onchange="saveSettings()"><option value="kpa">kPa</option><option value="psi">PSI</option></select></div>
+          </div>
+        </div>
+        <div class="sg">
+          <div class="sglbl">DIM MODE</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:8px;color:var(--dim);">BRIGHTNESS</span>
+            <input type="range" class="dimsl" id="dimsl" min="10" max="80" value="20" oninput="updateDim(this.value)">
+            <span style="font-size:8px;color:var(--cyan);" id="dimval">20%</span>
+          </div>
+        </div>
+        <div class="sg">
+          <div class="sglbl">KEYBOARD SHORTCUTS <span style="color:var(--dim);font-size:7px;margin-left:6px;">CLICK ROW TO REBIND</span></div>
+          <div class="kblist" id="kblist"></div>
+          <button class="sbtn se" style="margin-top:4px;" onclick="resetKeybinds()">RESET TO DEFAULTS</button>
+        </div>
+        <div class="sg">
+          <div class="sglbl">AI SERVER</div>
+          <div style="font-size:9px;color:var(--dim);padding:7px;border:1px solid var(--border2);" id="serverdet">Checking server at localhost:5005...</div>
+        </div>
+        <div class="sg">
+          <div class="sglbl">TEMPLATES</div>
+          <div id="tmplsettings" style="margin-bottom:6px;"></div>
+          <button class="sbtn se" onclick="genTemplate()">⚡ GENERATE FROM PROJECT HISTORY</button>
+        </div>
+        <div class="sg">
+          <div class="sglbl">DANGER</div>
+          <button class="sbtn da" onclick="clearAll()">CLEAR ALL LOCAL DATA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<aside class="right">
+  <div class="phdr"><div class="phdr-t">INTEL</div><div class="phdr-id">NODE-03</div></div>
+  <div class="rtabs">
+    <div class="rt active" onclick="switchRT(this,'weather')">WTHR</div>
+    <div class="rt" onclick="switchRT(this,'news')">NEWS</div>
+    <div class="rt" onclick="switchRT(this,'inv')">INV</div>
+    <div class="rt" onclick="switchRT(this,'calc')">CALC</div>
+    <div class="rt" onclick="switchRT(this,'sheets')">SHEETS</div>
+  </div>
+  <div class="rp active" id="rp-weather">
+    <div class="wb">
+      <div class="wt" id="wtemp">--<span class="wu">°C</span></div>
+      <div class="wd" id="wdesc">Loading...</div>
+      <div class="wg">
+        <div class="ws"><div class="wsl">WIND</div><div class="wsv" id="wwind">--</div></div>
+        <div class="ws"><div class="wsl">HUMIDITY</div><div class="wsv" id="whum">--</div></div>
+        <div class="ws"><div class="wsl">FEELS LIKE</div><div class="wsv" id="wfeels">--</div></div>
+        <div class="ws"><div class="wsl">UV INDEX</div><div class="wsv" id="wuv">--</div></div>
+      </div>
+      <div class="wfc" id="wfc"></div>
+    </div>
+  </div>
+  <div class="rp" id="rp-news">
+    <div style="display:flex;gap:2px;padding:5px 7px;border-bottom:1px solid var(--border);flex-wrap:nowrap;overflow-x:auto;flex-shrink:0;">
+      <div class="nfilt active" onclick="fnR('tech',this)">TECH</div>
+      <div class="nfilt" onclick="fnR('gaming',this)">GAMING</div>
+      <div class="nfilt" onclick="fnR('making',this)">MAKING</div>
+      <div class="nfilt" onclick="fnR('world',this)">WORLD</div>
+    </div>
+    <div class="nlist" id="newslistr"><div style="padding:10px;color:var(--dim);font-size:8px;">// Click NEWS tab to load.</div></div>
+  </div>
+  <div class="rp" id="rp-inv">
+    <div style="padding:5px 7px;border-bottom:1px solid var(--border);font-size:7px;color:var(--dim);flex-shrink:0;" id="invrh">INVENTORY SNAPSHOT</div>
+    <div style="flex:1;overflow-y:auto;padding:5px 7px;" id="invlistr"></div>
+  </div>
+  <div class="rp" id="rp-calc">
+    <div class="cbody" style="padding:8px;">
+      <div class="cdisp" style="font-size:18px;"><div class="cexpr" id="rcexpr">// QUICK CALC</div><div id="rcres">0</div></div>
+      <input class="cnlinp" id="rcnl" placeholder="'5kg to lbs', '240v*15a'..." onkeydown="if(event.key==='Enter')runRC()">
+      <button class="cnlbtn" onclick="runRC()">CALCULATE ▶</button>
+      <div class="ckpad">
+        <div class="ck" onclick="rck('7')">7</div><div class="ck" onclick="rck('8')">8</div><div class="ck" onclick="rck('9')">9</div><div class="ck op" onclick="rck('/')">÷</div>
+        <div class="ck" onclick="rck('4')">4</div><div class="ck" onclick="rck('5')">5</div><div class="ck" onclick="rck('6')">6</div><div class="ck op" onclick="rck('*')">×</div>
+        <div class="ck" onclick="rck('1')">1</div><div class="ck" onclick="rck('2')">2</div><div class="ck" onclick="rck('3')">3</div><div class="ck op" onclick="rck('-')">−</div>
+        <div class="ck" onclick="rck('0')">0</div><div class="ck" onclick="rck('.')">.</div><div class="ck fn" onclick="rbksp()">⌫</div><div class="ck op" onclick="rck('+')">+</div>
+        <div class="ck eq" style="grid-column:1/-1;" onclick="reval()">=</div>
+      </div>
+    </div>
+  </div>
+  <div class="rp" id="rp-sheets">
+    <div class="dsbody">
+      <div style="font-size:8px;color:var(--dim);margin-bottom:4px;">// COMPONENT DATASHEET LOOKUP</div>
+      <input class="dsinp" id="dsinp" placeholder="Part name or number e.g. ATmega2560...">
+      <button class="dsbtn" onclick="lookupDS()">SEARCH DATASHEET ▶</button>
+      <div class="dsres" id="dsres">// Enter component name and search.</div>
+      <div style="font-size:8px;color:var(--dim);margin-bottom:4px;margin-top:4px;">// STARRED DATASHEETS</div>
+      <div id="dsstarred"></div>
+    </div>
+  </div>
+</aside>
+<footer class="ftr">
+  <div class="fi2"><div class="sdot on"></div><span class="fb">MAKER.OS</span></div>
+  <span class="fsep">|</span>
+  <div class="fi2">RX 9060XT <span class="fb" style="margin-left:3px;">RDNA4</span></div>
+  <span class="fsep">|</span>
+  <div class="fi2">RYZEN 9 <span class="fb" style="margin-left:3px;">ZEN5</span></div>
+  <span class="fsep">|</span>
+  <div class="ftick"><div class="fscr" id="fscr">// MAKER.OS — STEINBACH MB CANADA — CTRL+SPACE: COMMAND BAR — ALT+C: QUICK CAPTURE //</div></div>
+  <div class="fr2"><span>49.5°N 96.7°W</span><span class="fsep">|</span><span id="fdate">--/--/----</span></div>
+</footer>
+</div>
+<script>
+const API='http://127.0.0.1:5005';
+let S={
+  projects:[],inventory:[],materials:[],tools:[],templates:[],snippets:[],
+  priceHistory:{},dsStarred:[],calcHist:[],chatHist:[],suggestions:[],
+  chatMode:'GENERAL',projFilter:'all',invFilter:'all',
+  newsTimeF:'all',newsTopicF:'',newsTopicFR:'tech',allNews:[],
+  calcExpr:'',rcExpr:'',currentProjId:null,
+  timerActive:false,timerStart:null,timerInterval:null,
+  matchMode:'material',dirHandle:null,sqOpen:false,qcOpen:false,
+  dimActive:false,dimLevel:20,editingKB:null,
+  settings:{measurement:'metric',currency:'CAD',torque:'nm',pressure:'kpa'},
+  keybinds:{cmdBar:'ctrl+ ',quickCapture:'alt+c',dimMode:'alt+w',tab1:'ctrl+1',tab2:'ctrl+2',tab3:'ctrl+3',tab4:'ctrl+4',tab5:'ctrl+5',tab6:'ctrl+6',tab7:'ctrl+7',tab8:'ctrl+8',tab9:'ctrl+9',save:'ctrl+s',search:'ctrl+f',export:'ctrl+e',refresh:'ctrl+r'},
+  launcherTiles:[
+    {name:'ONSHAPE',icon:'🔷',url:'https://cad.onshape.com'},
+    {name:'ARDUINO IDE',icon:'⚡',url:'https://www.arduino.cc/en/software'},
+    {name:'CURA',icon:'🖨️',url:'https://ultimaker.com/software/ultimaker-cura'},
+    {name:'PROCESSING',icon:'💻',url:'https://processing.org/download'},
+    {name:'STEAM',icon:'🎮',url:'https://store.steampowered.com'},
+    {name:'XBOX',icon:'🎯',url:'https://www.xbox.com/en-CA/apps/xbox-app-for-pc'},
+    {name:'DIGIKEY',icon:'📦',url:'https://www.digikey.ca'},
+    {name:'AMAZON CA',icon:'📫',url:'https://www.amazon.ca'},
+    {name:'ALIEXPRESS',icon:'🛒',url:'https://www.aliexpress.com'},
+    {name:'MCMASTER',icon:'🔩',url:'https://www.mcmaster.com'},
+    {name:'GITHUB',icon:'💾',url:'https://github.com'},
+    {name:'THINGIVERSE',icon:'🎲',url:'https://www.thingiverse.com'},
+    {name:'HACKADAY',icon:'🔧',url:'https://hackaday.com'},
+    {name:'GRABCAD',icon:'📐',url:'https://grabcad.com'},
+    {name:'OCTOPART',icon:'🔍',url:'https://octopart.com'}
+  ]
+};
+// FILE SYSTEM
+async function chooseFolder(){
+  try{const d=await window.showDirectoryPicker({mode:'readwrite'});S.dirHandle=d;document.getElementById('folderpath').value=d.name;document.getElementById('fsstatus').innerHTML=`<span style="color:var(--green2)">✓ ${d.name}</span><br><span style="font-size:7px;color:var(--dim);">Auto-saving here.</span>`;await loadFiles();toast('Folder: '+d.name);}
+  catch(e){if(e.name!=='AbortError')toast('Access denied');}
+}
+async function saveFiles(){
+  if(!S.dirHandle){saveLS();return;}
+  const fs={'maker-projects.json':S.projects,'maker-inventory.json':S.inventory,'maker-materials.json':S.materials,'maker-tools.json':S.tools,'maker-templates.json':S.templates,'maker-snippets.json':S.snippets,'maker-price-history.json':S.priceHistory,'maker-ds-starred.json':S.dsStarred,'maker-settings.json':{settings:S.settings,keybinds:S.keybinds,dimLevel:S.dimLevel,launcherTiles:S.launcherTiles}};
+  for(const[n,d]of Object.entries(fs)){try{const fh=await S.dirHandle.getFileHandle(n,{create:true});const w=await fh.createWritable();await w.write(JSON.stringify(d,null,2));await w.close();}catch(e){}}
+}
+async function loadFiles(){
+  if(!S.dirHandle){loadLS();return;}
+  const map={'maker-projects.json':'projects','maker-inventory.json':'inventory','maker-materials.json':'materials','maker-tools.json':'tools','maker-templates.json':'templates','maker-snippets.json':'snippets','maker-price-history.json':'priceHistory','maker-ds-starred.json':'dsStarred'};
+  for(const[n,k]of Object.entries(map)){try{const fh=await S.dirHandle.getFileHandle(n);const f=await fh.getFile();S[k]=JSON.parse(await f.text());}catch(e){}}
+  try{const fh=await S.dirHandle.getFileHandle('maker-settings.json');const f=await fh.getFile();const d=JSON.parse(await f.text());if(d.settings)S.settings=d.settings;if(d.keybinds)S.keybinds=d.keybinds;if(d.dimLevel)S.dimLevel=d.dimLevel;if(d.launcherTiles)S.launcherTiles=d.launcherTiles;}catch(e){}
+  renderAll();applySettings();
+}
+function saveLS(){const ks=['projects','inventory','materials','tools','templates','snippets','priceHistory','dsStarred'];ks.forEach(k=>{try{localStorage.setItem('mos_'+k,JSON.stringify(S[k]));}catch(e){}});try{localStorage.setItem('mos_cfg',JSON.stringify({settings:S.settings,keybinds:S.keybinds,dimLevel:S.dimLevel,launcherTiles:S.launcherTiles}));}catch(e){}}
+function loadLS(){const ks=['projects','inventory','materials','tools','templates','snippets','priceHistory','dsStarred'];ks.forEach(k=>{try{const v=localStorage.getItem('mos_'+k);if(v)S[k]=JSON.parse(v);}catch(e){}});try{const v=localStorage.getItem('mos_cfg');if(v){const d=JSON.parse(v);if(d.settings)S.settings=d.settings;if(d.keybinds)S.keybinds=d.keybinds;if(d.dimLevel)S.dimLevel=d.dimLevel;if(d.launcherTiles)S.launcherTiles=d.launcherTiles;}}catch(e){}renderAll();applySettings();}
+function save(){saveFiles();}
+function exportAll(){const b=new Blob([JSON.stringify({projects:S.projects,inventory:S.inventory,materials:S.materials,tools:S.tools,templates:S.templates,settings:S.settings,keybinds:S.keybinds,launcherTiles:S.launcherTiles},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='maker-os-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();}
+function importData(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async e=>{const d=JSON.parse(await e.target.files[0].text());['projects','inventory','materials','tools','templates','snippets'].forEach(k=>{if(d[k])S[k]=d[k];});if(d.settings)S.settings=d.settings;if(d.keybinds)S.keybinds=d.keybinds;if(d.launcherTiles)S.launcherTiles=d.launcherTiles;save();renderAll();applySettings();toast('Backup restored');};i.click();}
+function clearAll(){if(!confirm('Delete ALL data?'))return;S.projects=[];S.inventory=[];S.materials=[];S.tools=[];S.templates=[];S.snippets=[];S.priceHistory={};S.dsStarred=[];S.chatHist=[];save();renderAll();toast('Cleared');}
+// CLOCK
+function tick(){const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('en-CA',{hour12:false});document.getElementById('fdate').textContent=n.toLocaleDateString('en-CA');}
+setInterval(tick,1000);tick();
+const vb={cpu:{b:34,r:16},gpu:{b:61,r:10},ram:{b:44,r:5}};
+function updateVitals(){['cpu','gpu','ram'].forEach(k=>{const p=Math.min(99,Math.max(2,vb[k].b+(Math.random()-.5)*vb[k].r*2));const r=Math.round(p);const sv=document.getElementById(k+'v');const sb=document.getElementById(k+'b');const sh=document.getElementById('h'+k);if(sv)sv.textContent=r+'%';if(sb)sb.style.width=r+'%';if(sh)sh.textContent=r+'%';});}
+setInterval(updateVitals,2500);updateVitals();
+// SERVER
+async function checkServer(){
+  try{const r=await fetch(API+'/health',{signal:AbortSignal.timeout(3000)});const d=await r.json();if(d.ok){document.getElementById('aidot').className='sdot on';document.getElementById('aitxt').textContent='AI ONLINE';document.getElementById('aiconn').textContent='● CLAUDE ONLINE';document.getElementById('aiconn').style.color='var(--green2)';document.getElementById('serverdet').textContent='✓ Server online. Claude API connected.';return true;}}
+  catch(e){document.getElementById('aidot').className='sdot off';document.getElementById('aitxt').textContent='AI OFFLINE';document.getElementById('aiconn').textContent='● SERVER OFFLINE';document.getElementById('aiconn').style.color='var(--red)';document.getElementById('serverdet').innerHTML='✗ Cannot reach server.<br>Run: <span style="color:var(--cyan)">python server.py</span>';}
+  return false;
+}
+checkServer();setInterval(checkServer,30000);
+// NAV
+const TABS=['command','projects','inventory','materials','tools','matcher','calculator','news','launcher','settings'];
+function switchTab(name,el){document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('active'));const tc=document.getElementById('tc-'+name);if(tc)tc.classList.add('active');if(name==='news')loadNews();if(name==='launcher')renderLauncher();if(name==='settings')renderSettings();}
+function switchRT(el,id){document.querySelectorAll('.rt').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.rp').forEach(p=>p.classList.remove('active'));document.getElementById('rp-'+id).classList.add('active');}
+// DIM
+function toggleDim(){S.dimActive=!S.dimActive;document.body.classList.toggle('dim-mode',S.dimActive);document.getElementById('dimbtn').classList.toggle('on',S.dimActive);document.documentElement.style.setProperty('--dl',S.dimLevel/100);}
+function updateDim(v){S.dimLevel=parseInt(v);document.getElementById('dimval').textContent=v+'%';document.documentElement.style.setProperty('--dl',S.dimLevel/100);save();}
+// AI CHAT
+function buildSys(){const ctx={projects:S.projects.map(p=>({name:p.name,status:p.status,deadline:p.deadline,progress:p.progress})),inventory:S.inventory.map(i=>({name:i.name,haveQty:i.haveQty,needQty:i.needQty})),materials:S.materials.map(m=>({name:m.name,type:m.type,qty:m.qty})),tools:S.tools.map(t=>({name:t.name,caps:t.caps}))};
+return `You are an expert maker and engineer AI assistant in Maker.OS for a maker in Steinbach, Manitoba, Canada. Mode: ${S.chatMode}. Units: ${S.settings.measurement}, ${S.settings.currency}, torque: ${S.settings.torque}, pressure: ${S.settings.pressure}. Data: Projects(${ctx.projects.length}):${JSON.stringify(ctx.projects)} Inventory(${ctx.inventory.length}):${JSON.stringify(ctx.inventory)} Materials(${ctx.materials.length}):${JSON.stringify(ctx.materials)} Tools(${ctx.tools.length}):${JSON.stringify(ctx.tools)}. Be direct, technical, practical. Use preferred units. Reference actual tools/materials/projects when relevant.`;}
+async function sendChat(){const inp=document.getElementById('chatinp');const txt=inp.value.trim();if(!txt)return;inp.value='';addMsg('u','OPR',txt);S.chatHist.push({role:'user',content:txt});const btn=document.getElementById('sendbtn');btn.disabled=true;const typing=addMsg('a','AI','<div class="typing"><span></span><span></span><span></span></div>');
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSys(),messages:S.chatHist.slice(-20),max_tokens:1024})});const d=await r.json();typing.remove();if(d.ok){addMsg('a','AI',d.text.replace(/\n/g,'<br>'));S.chatHist.push({role:'assistant',content:d.text});save();}else addMsg('a','AI',`<span style="color:var(--red)">${d.error}</span>`);}
+catch(e){typing.remove();addMsg('a','AI','<span style="color:var(--red)">Server offline. Run server.py</span>');}
+btn.disabled=false;}
+function addMsg(type,tag,html){const c=document.getElementById('chat');const d=document.createElement('div');d.className='cm '+type;d.innerHTML=`<div class="ctag">${tag}</div><div class="cbub">${html}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;return d;}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function setMode(btn,m){document.querySelectorAll('.mdb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');S.chatMode=m;}
+async function sendDirect(msg){addMsg('u','OPR',msg);S.chatHist.push({role:'user',content:msg});const typing=addMsg('a','AI','<div class="typing"><span></span><span></span><span></span></div>');
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSys(),messages:S.chatHist.slice(-20),max_tokens:1024})});const d=await r.json();typing.remove();if(d.ok){addMsg('a','AI',d.text.replace(/\n/g,'<br>'));S.chatHist.push({role:'assistant',content:d.text});save();}else{typing.remove();addMsg('a','AI',`<span style="color:var(--red)">${d.error}</span>`);}}
+catch(e){typing.remove();addMsg('a','AI','<span style="color:var(--red)">Server offline</span>');}}
+// PROJECTS
+function saveProject(){const name=document.getElementById('np-name').value.trim();if(!name){toast('Name required');return;}const tmplId=document.getElementById('np-tmpl').value;const proj={id:Date.now(),name,desc:document.getElementById('np-desc').value,status:document.getElementById('np-status').value,priority:document.getElementById('np-pri').value,deadline:document.getElementById('np-dl').value,created:new Date().toISOString(),checklist:[],bom:[],log:[],notes:'',totalTime:0,progress:0};
+if(tmplId){const t=S.templates.find(x=>x.id==tmplId);if(t){proj.checklist=t.checklist.map(c=>({...c,done:false}));proj.bom=t.bom.map(b=>({...b,have:false}));}}
+S.projects.push(proj);save();renderProjects();cm('mProj');['np-name','np-desc','np-dl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});toast('Created: '+name);setTimeout(runAIScan,2000);}
+function renderProjects(){const now=new Date();const q1=(document.getElementById('ps1')||{}).value?.toLowerCase()||'';const q2=(document.getElementById('ps2')||{}).value?.toLowerCase()||'';const q=q1||q2;
+let projs=S.projects.filter(p=>{const dl=p.deadline?new Date(p.deadline):null;if(S.projFilter==='overdue')return dl&&dl<now&&p.status!=='complete';if(S.projFilter!=='all')return p.status===S.projFilter;return true;}).filter(p=>!q||p.name.toLowerCase().includes(q)||p.desc?.toLowerCase().includes(q));
+const over=S.projects.filter(p=>p.deadline&&new Date(p.deadline)<now&&p.status!=='complete').length;document.getElementById('bp').style.display=over>0?'inline':'none';
+['pg1','pg2'].forEach(gid=>{const g=document.getElementById(gid);if(!g)return;if(!projs.length){g.innerHTML='<div style="color:var(--dim);font-size:9px;padding:16px;">// No projects match.</div>';return;}
+g.innerHTML=projs.map(p=>{const dl=p.deadline?new Date(p.deadline):null;const isO=dl&&dl<now&&p.status!=='complete';const isS=dl&&!isO&&(dl-now)<7*86400000;const days=dl?Math.ceil((dl-now)/86400000):null;const dlt=!dl?'NO DL':isO?`OVER ${Math.abs(days)}D`:isS?`DUE ${days}D`:`DUE ${days}D`;const dlc=isO?'dlo':isS?'dlw':'';const bm={active:'ba',planning:'bp2',complete:'bc',hold:'bh'};const bl={active:'ACTIVE',planning:'PLANNING',complete:'COMPLETE',hold:'HOLD'};
+return `<div class="pcard s${p.status.charAt(0)}${isO?' ov':''}" onclick="openProj(${p.id})"><div class="pctop"><div class="pcn">${p.name}</div><div class="pcb ${bm[p.status]}">${bl[p.status]}</div></div><div class="pcd">${p.desc||'// No description'}</div><div class="pcbw"><div class="pcb2" style="width:${p.progress||0}%"></div></div><div class="pcf"><span>${p.progress||0}% DONE</span><span class="${dlc}">${dlt}</span><span class="pcai" onclick="event.stopPropagation();aiProj(${p.id})">⚡</span></div></div>`;}).join('');});}
+function fproj(f,el){S.projFilter=f;document.querySelectorAll('.pfilt').forEach(e=>e.classList.remove('active'));el.classList.add('active');renderProjects();}
+// PROJECT DETAIL
+function openProj(id){S.currentProjId=id;const p=S.projects.find(x=>x.id===id);if(!p)return;document.getElementById('pdname').textContent=p.name;document.querySelector('.pdt.on')?.classList.remove('on');document.querySelector('.pdt').classList.add('on');renderPDTab('overview');document.getElementById('pdo').classList.add('open');}
+function closePD(){document.getElementById('pdo').classList.remove('open');S.currentProjId=null;clearInterval(S.timerInterval);}
+function switchPDTab(el,tab){document.querySelectorAll('.pdt').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderPDTab(tab);}
+function renderPDTab(tab){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;const body=document.getElementById('pdbody');const now=new Date();
+if(tab==='overview'){const dl=p.deadline?new Date(p.deadline):null;const days=dl?Math.ceil((dl-now)/86400000):null;
+body.innerHTML=`<div class="pdsec"><div class="pdsl">// DETAILS</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;font-size:9px;margin-bottom:10px;"><div style="padding:5px 7px;border:1px solid var(--border);"><div style="color:var(--dim);font-size:7px;">STATUS</div><div style="color:var(--text2);">${p.status.toUpperCase()}</div></div><div style="padding:5px 7px;border:1px solid var(--border);"><div style="color:var(--dim);font-size:7px;">PRIORITY</div><div style="color:var(--text2);">${p.priority?.toUpperCase()||'--'}</div></div><div style="padding:5px 7px;border:1px solid var(--border);"><div style="color:var(--dim);font-size:7px;">DEADLINE</div><div style="color:var(--text2);">${p.deadline||'NONE'}</div></div><div style="padding:5px 7px;border:1px solid var(--border);"><div style="color:var(--dim);font-size:7px;">DAYS LEFT</div><div style="color:${days!==null&&days<0?'var(--red)':'var(--cyan)'};">${days!==null?Math.abs(days)+(days<0?' OVER':'D'):'--'}</div></div></div><textarea style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:9px;padding:7px;outline:none;resize:vertical;min-height:70px;" placeholder="// Project notes..." onchange="upNotes(this.value)">${p.notes||''}</textarea></div>
+<div class="pdsec"><div class="pdsl">// TIME TRACKER</div><div class="tmrw"><div class="tmrd" id="tmrd">${fmt(p.totalTime||0)}</div><div style="flex:1;font-size:8px;color:var(--dim);">TOTAL LOGGED</div><button class="tmrb st" onclick="startTmr()">▶ START</button><button class="tmrb sp" onclick="stopTmr()">■ STOP</button></div></div>
+<div class="pdsec"><div class="pdsl">// EXPORT</div><div style="display:flex;gap:5px;"><button class="sbtn pr" style="font-size:8px;" onclick="exportPDF()">EXPORT PDF</button><button class="sbtn se" style="font-size:8px;" onclick="exportCSV()">BOM CSV</button><button class="sbtn se" style="font-size:8px;" onclick="exportClean()">CLEAN PDF</button></div></div>`;}
+else if(tab==='checklist'){body.innerHTML=`<div class="pdsec"><div class="pdsl">// CHECKLIST <span style="float:right;color:var(--cyan);cursor:pointer;" onclick="addChk()">+ ADD TASK</span></div><div id="chklist">${renderChk(p)}</div><button class="mbtn2" style="margin-top:7px;" onclick="aiChk()">⚡ AI SUGGEST TASKS</button></div>`;}
+else if(tab==='bom'){const tot=p.bom?.reduce((a,b)=>a+(parseFloat(b.price)||0)*(parseInt(b.qty)||1),0)||0;body.innerHTML=`<div class="pdsec"><div class="pdsl">// BOM <span style="float:right;color:var(--dim);">TOTAL: ${S.settings.currency} ${tot.toFixed(2)}</span></div><div style="margin-bottom:5px;"><span style="color:var(--cyan);cursor:pointer;" onclick="addBOM()">+ ADD PART</span></div><div id="bomlist">${renderBOM(p)}</div><button class="mbtn2" style="margin-top:7px;" onclick="aiBOM()">⚡ AI SUGGEST PARTS</button></div>`;}
+else if(tab==='log'){body.innerHTML=`<div class="pdsec"><div class="pdsl">// BUILD LOG</div><div style="display:flex;gap:5px;margin-bottom:7px;"><input id="loginp" class="fi" placeholder="// Log an entry..." style="flex:1;"><button class="mb pr" onclick="addLog()">LOG</button></div><div>${(p.log||[]).slice().reverse().map(l=>`<div class="loge"><span class="logts">${l.time}</span> — ${l.text}</div>`).join('')||'<div style="color:var(--dim);font-size:9px;">// No entries.</div>'}</div></div>`;}}
+function renderChk(p){if(!p.checklist?.length)return'<div style="color:var(--dim);font-size:9px;">// No tasks.</div>';return p.checklist.map((c,i)=>{const pc=c.pri==='high'?'var(--red)':c.pri==='med'?'var(--warn)':'var(--cyan)';return`<div class="chki${c.done?' dn':''}" onclick="togChk(${i})"><div class="chkb">${c.done?'✓':''}</div><div style="flex:1;"><div class="chkt">${c.text}</div>${c.note?`<div class="chkn">${c.note}</div>`:''}</div><div class="chkp" style="color:${pc};border-color:${pc};">${(c.pri||'med').toUpperCase()}</div></div>`;}).join('');}
+function renderBOM(p){if(!p.bom?.length)return'<div style="color:var(--dim);font-size:9px;">// No parts.</div>';return p.bom.map((b,i)=>`<div class="bomr"><div class="bomn">${b.name}</div><div class="bomq">${b.qty||1}</div><div class="bomh${b.have?' ch':''}" onclick="togBOM(${i})"><div class="bomhb">${b.have?'✓':''}</div><span style="font-size:7px;color:${b.have?'var(--green2)':'var(--dim)'};">${b.have?'HAVE':'NEED'}</span></div><div class="bomp">${b.price?S.settings.currency+' '+b.price:''}</div><a href="https://www.digikey.ca/en/products/result?keywords=${encodeURIComponent(b.name)}" target="_blank" class="ibuy">BUY</a></div>`).join('');}
+function togChk(i){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;p.checklist[i].done=!p.checklist[i].done;p.progress=p.checklist.length?Math.round(p.checklist.filter(c=>c.done).length/p.checklist.length*100):0;save();renderProjects();document.getElementById('chklist').innerHTML=renderChk(p);}
+function togBOM(i){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;p.bom[i].have=!p.bom[i].have;save();document.getElementById('bomlist').innerHTML=renderBOM(p);}
+function addChk(){const t=prompt('Task:');if(!t)return;const n=prompt('Sub-note (optional):');const pr=prompt('Priority (high/med/low):')||'med';const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;p.checklist.push({text:t,note:n||'',pri:pr,done:false});save();renderProjects();document.getElementById('chklist').innerHTML=renderChk(p);}
+function addBOM(){const n=prompt('Part name:');if(!n)return;const q=prompt('Qty:')||'1';const pr=prompt('Unit price:');const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;p.bom.push({name:n,qty:q,have:false,price:pr||''});save();document.getElementById('bomlist').innerHTML=renderBOM(p);}
+function addLog(){const t=document.getElementById('loginp').value.trim();if(!t)return;const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;if(!p.log)p.log=[];p.log.push({text:t,time:new Date().toLocaleString('en-CA')});document.getElementById('loginp').value='';save();renderPDTab('log');}
+function upNotes(v){const p=S.projects.find(x=>x.id===S.currentProjId);if(p){p.notes=v;save();}}
+function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return`${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+function startTmr(){if(S.timerActive)return;S.timerActive=true;S.timerStart=Date.now();const p=S.projects.find(x=>x.id===S.currentProjId);S.timerInterval=setInterval(()=>{const el=document.getElementById('tmrd');if(el&&p)el.textContent=fmt((p.totalTime||0)+(Date.now()-S.timerStart));},1000);}
+function stopTmr(){if(!S.timerActive)return;S.timerActive=false;clearInterval(S.timerInterval);const p=S.projects.find(x=>x.id===S.currentProjId);if(p){p.totalTime=(p.totalTime||0)+(Date.now()-S.timerStart);save();}}
+async function aiProj(id){const p=S.projects.find(x=>x.id===id);if(!p)return;switchTab('command',document.querySelectorAll('.ntab')[0]);await sendDirect(`Review project "${p.name}" (${p.status}, ${p.progress||0}% done, deadline: ${p.deadline||'none'}). Give 3-5 specific suggestions.`);}
+async function aiChk(){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Maker assistant. Return ONLY JSON array: [{"text":"task","pri":"high|med|low"}]',messages:[{role:'user',content:`Project: "${p.name}" - ${p.desc}. Existing: ${JSON.stringify(p.checklist?.map(c=>c.text))}. Suggest 4-6 missing tasks.`}],max_tokens:400})});const d=await r.json();if(d.ok){const txt=d.text.replace(/```json|```/g,'').trim();const tasks=JSON.parse(txt.slice(txt.indexOf('['),txt.lastIndexOf(']')+1));tasks.forEach(t=>p.checklist.push({text:t.text,pri:t.pri||'med',done:false,note:''}));save();document.getElementById('chklist').innerHTML=renderChk(p);toast(`${tasks.length} tasks added`);}}catch(e){toast('Server offline');}}
+async function aiBOM(){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Maker assistant. Return ONLY JSON: [{"name":"part","qty":"2","price":""}]',messages:[{role:'user',content:`Project: "${p.name}" - ${p.desc}. Existing: ${JSON.stringify(p.bom?.map(b=>b.name))}. Suggest 4-6 missing parts.`}],max_tokens:400})});const d=await r.json();if(d.ok){const txt=d.text.replace(/```json|```/g,'').trim();const parts=JSON.parse(txt.slice(txt.indexOf('['),txt.lastIndexOf(']')+1));parts.forEach(pt=>p.bom.push({name:pt.name,qty:pt.qty||'1',have:false,price:pt.price||''}));save();document.getElementById('bomlist').innerHTML=renderBOM(p);toast(`${parts.length} parts added`);}}catch(e){toast('Server offline');}}
+function exportPDF(){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;let h=`<html><head><style>body{font-family:monospace;font-size:11px;padding:20px;}h1{font-size:18px;margin-bottom:4px;}h2{font-size:13px;margin:14px 0 5px;border-bottom:1px solid #ccc;}table{width:100%;border-collapse:collapse;}td,th{border:1px solid #ddd;padding:4px 7px;font-size:10px;}th{background:#f0f0f0;}</style></head><body>`;h+=`<h1>${p.name}</h1><p>Status: ${p.status} | Progress: ${p.progress||0}% | Deadline: ${p.deadline||'None'} | Time: ${fmt(p.totalTime||0)}</p><p>${p.desc||''}</p>`;if(p.checklist?.length){h+=`<h2>CHECKLIST</h2><table><tr><th>Done</th><th>Task</th><th>Pri</th></tr>`;p.checklist.forEach(c=>{h+=`<tr><td>${c.done?'✓':''}</td><td>${c.text}</td><td>${c.pri||'med'}</td></tr>`;});h+=`</table>`;}if(p.bom?.length){const tot=p.bom.reduce((a,b)=>a+(parseFloat(b.price)||0)*(parseInt(b.qty)||1),0);h+=`<h2>BOM — Total: ${S.settings.currency} ${tot.toFixed(2)}</h2><table><tr><th>Part</th><th>Qty</th><th>Have</th><th>Price</th></tr>`;p.bom.forEach(b=>{h+=`<tr><td>${b.name}</td><td>${b.qty||1}</td><td>${b.have?'✓':''}</td><td>${b.price?S.settings.currency+' '+b.price:''}</td></tr>`;});h+=`</table>`;}if(p.log?.length){h+=`<h2>BUILD LOG</h2>`;p.log.forEach(l=>{h+=`<p><strong>${l.time}</strong> — ${l.text}</p>`;});}h+=`</body></html>`;const w=window.open('','_blank');w.document.write(h);w.document.close();w.print();}
+function exportCSV(){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p||!p.bom?.length)return;let csv='Name,Qty,Have,Price\n';p.bom.forEach(b=>{csv+=`"${b.name}","${b.qty||1}","${b.have?'Yes':'No'}","${b.price||''}"\n`;});const a=document.createElement('a');a.href='data:text/csv,'+encodeURIComponent(csv);a.download=p.name.replace(/\s/g,'_')+'_BOM.csv';a.click();}
+function exportClean(){const p=S.projects.find(x=>x.id===S.currentProjId);if(!p)return;let h=`<html><head><style>body{font-family:monospace;font-size:11px;padding:20px;}h1{font-size:18px;}h2{font-size:13px;margin:12px 0 4px;border-bottom:1px solid #ccc;}table{width:100%;border-collapse:collapse;}td,th{border:1px solid #ddd;padding:4px 7px;font-size:10px;}th{background:#f5f5f5;}</style></head><body>`;h+=`<h1>${p.name}</h1><p>Status: ${p.status} | Progress: ${p.progress||0}%</p><p>${p.desc||''}</p>`;if(p.checklist?.length){h+=`<h2>CHECKLIST</h2><table><tr><th>Done</th><th>Task</th></tr>`;p.checklist.forEach(c=>{h+=`<tr><td>${c.done?'✓':''}</td><td>${c.text}</td></tr>`;});h+=`</table>`;}if(p.bom?.length){h+=`<h2>BOM</h2><table><tr><th>Part</th><th>Qty</th><th>Have</th></tr>`;p.bom.forEach(b=>{h+=`<tr><td>${b.name}</td><td>${b.qty||1}</td><td>${b.have?'✓':''}</td></tr>`;});h+=`</table>`;}h+=`</body></html>`;const w=window.open('','_blank');w.document.write(h);w.document.close();w.print();}
+// INVENTORY
+function saveInv(){const name=document.getElementById('ni-name').value.trim();if(!name){toast('Name required');return;}S.inventory.push({id:Date.now(),name,partNum:document.getElementById('ni-pn').value,category:document.getElementById('ni-cat').value,supplier:document.getElementById('ni-sup').value,haveQty:parseInt(document.getElementById('ni-have').value)||0,needQty:parseInt(document.getElementById('ni-need').value)||0,price:parseFloat(document.getElementById('ni-price').value)||0,targetPrice:parseFloat(document.getElementById('ni-target').value)||0,notes:document.getElementById('ni-notes').value,priceHistory:[],added:new Date().toISOString()});save();renderInv();cm('mInv');['ni-name','ni-pn','ni-have','ni-need','ni-price','ni-target','ni-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});toast('Added: '+name);setTimeout(runAIScan,1000);}
+function gst(i){if(i.haveQty===0)return'out';if(i.needQty>0&&i.haveQty<i.needQty)return'low';return'ok';}
+function finv(f,el){S.invFilter=f;document.querySelectorAll('#tc-inventory .pfilt').forEach(e=>e.classList.remove('active'));el.classList.add('active');renderInv();}
+function renderInv(){const q=(document.getElementById('invsearch')||{}).value?.toLowerCase()||'';let items=S.inventory.filter(i=>{const st=gst(i);if(S.invFilter==='low')return st==='low';if(S.invFilter==='out')return st==='out';if(S.invFilter==='ok')return st==='ok';return true;}).filter(i=>!q||i.name.toLowerCase().includes(q)||i.partNum?.toLowerCase().includes(q));
+const low=S.inventory.filter(i=>gst(i)==='low').length;const out=S.inventory.filter(i=>gst(i)==='out').length;const total=S.inventory.reduce((a,i)=>a+(i.price||0)*Math.max(i.haveQty||0,1),0);const stats=document.getElementById('invstats');if(stats)stats.textContent=`${S.inventory.length} ITEMS · ${low} LOW · ${out} OUT · ${S.settings.currency} ${total.toFixed(2)}`;
+document.getElementById('bi').style.display=(low+out>0)?'inline':'none';
+const html=!items.length?'<div style="color:var(--dim);font-size:9px;padding:12px;">// No items.</div>':items.map(item=>{const st=gst(item);const sup=item.supplier||'DigiKey';const buyUrl=sup==='Amazon'?`https://www.amazon.ca/s?k=${encodeURIComponent(item.name)}`:sup==='AliExpress'?`https://www.aliexpress.com/wholesale?SearchText=${encodeURIComponent(item.name)}`:sup==='McMaster-Carr'?`https://www.mcmaster.com/#${encodeURIComponent(item.name)}`:`https://www.digikey.ca/en/products/result?keywords=${encodeURIComponent(item.partNum||item.name)}`;
+const hist=item.priceHistory||[];const priceClass=hist.length>1&&item.price<hist[hist.length-2]?'ipr-d':hist.length>1&&item.price>hist[hist.length-2]?'ipr-r':'';
+return`<div class="irow"><div style="display:flex;flex-direction:column;flex:1;min-width:0;"><div class="inm">${item.name}${item.partNum?` <span style="color:var(--dim);font-size:7px;">(${item.partNum})</span>`:''}</div><div class="icat">${item.category} · ${sup}</div></div><div class="iqty">${item.haveQty}</div><div class="ist ${st}">${st.toUpperCase()}</div>${item.price?`<div class="ipr ${priceClass}">${S.settings.currency} ${item.price.toFixed(2)}</div>`:''}<a href="${buyUrl}" target="_blank" class="ibuy">BUY</a></div>`;}).join('');
+const el=document.getElementById('invlist');if(el)el.innerHTML=html;
+const rEl=document.getElementById('invlistr');if(rEl){const rh=document.getElementById('invrh');if(rh)rh.textContent=`INVENTORY · ${low} LOW · ${out} OUT`;rEl.innerHTML=S.inventory.slice(0,10).map(item=>{const st=gst(item);return`<div class="irow" style="font-size:8px;"><span class="inm" style="font-size:9px;">${item.name}</span><span class="iqty" style="font-size:9px;">${item.haveQty}</span><span class="ist ${st}" style="font-size:7px;">${st.toUpperCase()}</span></div>`;}).join('');}}
+async function refreshPrices(){toast('Fetching prices...');const items=S.inventory.filter(i=>i.partNum).slice(0,5);if(!items.length){toast('Add part numbers first');return;}for(const item of items){try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Price lookup. Return ONLY JSON: {"price":number}. No markdown.',messages:[{role:'user',content:`Approximate DigiKey CAD price for: ${item.name} part# ${item.partNum}`}],max_tokens:60})});const d=await r.json();if(d.ok){try{const pd=JSON.parse(d.text.replace(/```json|```/g,'').trim());if(pd.price>0){if(!item.priceHistory)item.priceHistory=[];item.priceHistory.push(item.price||0);if(item.priceHistory.length>10)item.priceHistory.shift();if(item.targetPrice>0&&pd.price<=item.targetPrice&&item.price>item.targetPrice)toast(`🎯 Price target hit: ${item.name}`);item.price=pd.price;}}catch(e){}}catch(e){}}save();renderInv();toast('Prices updated');}
+// MATERIALS
+function saveMat(){const name=document.getElementById('nm-name').value.trim();if(!name){toast('Name required');return;}S.materials.push({id:Date.now(),name,type:document.getElementById('nm-type').value,qty:document.getElementById('nm-qty').value,dims:document.getElementById('nm-dims').value,condition:document.getElementById('nm-cond').value,notes:document.getElementById('nm-notes').value,added:new Date().toISOString()});save();renderMats();cm('mMat');['nm-name','nm-qty','nm-dims','nm-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});toast('Added: '+name);}
+function renderMats(){const el=document.getElementById('matlist');if(!el)return;if(!S.materials.length){el.innerHTML='<div style="color:var(--dim);font-size:9px;padding:16px;">// No materials yet.</div>';return;}el.innerHTML=S.materials.map(m=>`<div class="mcard"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><div class="mn">${m.name}</div><div class="mt">${m.type}</div></div><div class="msp"><span>QTY: <span>${m.qty||'--'}</span></span><span>DIMS: <span>${m.dims||'--'}</span></span><span>COND: <span>${m.condition}</span></span></div>${m.notes?`<div style="font-size:8px;color:var(--dim);margin-top:3px;">${m.notes}</div>`:''}<div class="mai" onclick="aiMat(${m.id})">⚡ What can I build with this?</div></div>`).join('');}
+async function aiMat(id){const m=S.materials.find(x=>x.id===id);if(!m)return;switchTab('command',document.querySelectorAll('.ntab')[0]);await sendDirect(`What can I realistically build with my ${m.name} (${m.qty}, ${m.dims})? Consider my available tools.`);}
+// TOOLS
+function saveTool(){const name=document.getElementById('nt-name').value.trim();if(!name){toast('Name required');return;}const caps=document.getElementById('nt-caps').value.split(',').map(c=>c.trim().toUpperCase()).filter(Boolean);S.tools.push({id:Date.now(),name,caps,condition:document.getElementById('nt-cond').value,notes:document.getElementById('nt-notes').value,added:new Date().toISOString()});save();renderTools();cm('mTool');['nt-name','nt-caps','nt-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});toast('Added: '+name);}
+function renderTools(){const el=document.getElementById('toollist');if(!el)return;if(!S.tools.length){el.innerHTML='<div style="color:var(--dim);font-size:9px;padding:16px;">// No tools yet.</div>';return;}el.innerHTML=S.tools.map(t=>`<div class="tcard"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><div class="tnm">${t.name}</div><div style="font-size:8px;color:var(--dim);">${t.condition}</div></div><div class="tcaps">${(t.caps||[]).map(c=>`<span class="tcap">${c}</span>`).join('')}</div>${t.notes?`<div style="font-size:8px;color:var(--dim);margin-top:3px;">${t.notes}</div>`:''}</div>`).join('');}
+// MATCHER
+let matchMode='material';
+function switchMM(el,m){document.querySelectorAll('.mmbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');matchMode=m;}
+async function runMatcher(){const q=document.getElementById('matchinp').value.trim();if(!q)return;const res=document.getElementById('matchres');res.innerHTML='// Analyzing...';const tl=S.tools.map(t=>t.name+' ('+t.caps.join(',')+')'). join('; ');const ml=S.materials.map(m=>m.name+' '+m.qty).join('; ');const prompt=matchMode==='material'?`User wants to: "${q}". Tools: ${tl||'none'}. Materials: ${ml||'none'}. List tools they have ✓ and need ✗. What materials work. Be specific.`:`Project: "${q}". Tools: ${tl||'none'}. Materials: ${ml||'none'}. GREEN/AMBER/RED readiness. List tools and materials they have vs need.`;
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Maker assistant. Be concise.',messages:[{role:'user',content:prompt}],max_tokens:600})});const d=await r.json();if(d.ok)res.innerHTML=d.text.replace(/\n/g,'<br>').replace(/✓/g,'<span class="ok">✓</span>').replace(/✗/g,'<span class="bad">✗</span>').replace(/GREEN/g,'<span class="ok">GREEN</span>').replace(/RED/g,'<span class="bad">RED</span>').replace(/AMBER/g,'<span class="wrn">AMBER</span>');else res.innerHTML=`<span style="color:var(--red)">${d.error}</span>`;}
+catch(e){res.innerHTML='<span style="color:var(--red)">Server offline</span>';}}
+// CALCULATOR
+let calcExpr='',rcExpr='';
+function ck(k){calcExpr+=k;document.getElementById('cexpr').textContent=calcExpr;}
+function rck(k){rcExpr+=k;document.getElementById('rcexpr').textContent=rcExpr;}
+function clearCalc(){calcExpr='';document.getElementById('cexpr').textContent='// ENTER EXPRESSION';document.getElementById('cres').textContent='0';}
+function bksp(){calcExpr=calcExpr.slice(0,-1);document.getElementById('cexpr').textContent=calcExpr||'// ENTER EXPRESSION';}
+function rbksp(){rcExpr=rcExpr.slice(0,-1);document.getElementById('rcexpr').textContent=rcExpr||'// QUICK CALC';}
+function evalCalc(){try{const res=Function('"use strict";return ('+calcExpr+')')();document.getElementById('cres').textContent=res;addCH(calcExpr+' = '+res);calcExpr='';document.getElementById('cexpr').textContent='// RESULT';}catch(e){document.getElementById('cres').textContent='ERROR';}}
+function reval(){try{const res=Function('"use strict";return ('+rcExpr+')')();document.getElementById('rcres').textContent=res;document.getElementById('rcexpr').textContent=rcExpr+' =';rcExpr='';}catch(e){document.getElementById('rcres').textContent='ERROR';}}
+async function runCalc(){const q=document.getElementById('cnlinp').value.trim();if(!q)return;document.getElementById('cexpr').textContent=q;document.getElementById('cres').textContent='...';
+try{const expr=q.replace(/×/g,'*').replace(/÷/g,'/');const res=Function('"use strict";return ('+expr+')')();if(typeof res==='number'&&isFinite(res)){document.getElementById('cres').textContent=res;addCH(q+' = '+res);document.getElementById('cnlinp').value='';return;}}catch(e){}
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:`Calculator. User prefers ${S.settings.measurement}, ${S.settings.currency}, ${S.settings.torque}, ${S.settings.pressure}. Result and unit on line 1, brief explanation line 2. No markdown.`,messages:[{role:'user',content:q}],max_tokens:150})});const d=await r.json();if(d.ok){const lines=d.text.trim().split('\n');document.getElementById('cres').textContent=lines[0];document.getElementById('cexpr').textContent=lines[1]||q;addCH(q+' = '+lines[0]);}else document.getElementById('cres').textContent='ERROR';}
+catch(e){document.getElementById('cres').textContent='OFFLINE';}
+document.getElementById('cnlinp').value='';}
+async function runRC(){const q=document.getElementById('rcnl').value.trim();if(!q)return;try{const expr=q.replace(/×/g,'*').replace(/÷/g,'/');const res=Function('"use strict";return ('+expr+')')();if(typeof res==='number'&&isFinite(res)){document.getElementById('rcres').textContent=res;document.getElementById('rcexpr').textContent=q+' =';document.getElementById('rcnl').value='';return;}}catch(e){}
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Calculator. One line: result and unit only.',messages:[{role:'user',content:q}],max_tokens:60})});const d=await r.json();if(d.ok){document.getElementById('rcres').textContent=d.text.trim().split('\n')[0];document.getElementById('rcexpr').textContent=q+' =';}}catch(e){document.getElementById('rcres').textContent='OFFLINE';}
+document.getElementById('rcnl').value='';}
+function addCH(e){S.calcHist.unshift(e);if(S.calcHist.length>20)S.calcHist.pop();const el=document.getElementById('chist');if(el)el.innerHTML=S.calcHist.map(h=>`<div class="chi" onclick="document.getElementById('cnlinp').value='${h.split('=')[0].trim()}'">${h}</div>`).join('');}
+// ENG CALCS
+const ENG={
+  ohm:{title:"OHM'S LAW",fields:[{id:'ov',l:'VOLTAGE (V)',p:'volts'},{id:'oi',l:'CURRENT (A)',p:'amps'},{id:'or',l:'RESISTANCE (Ω)',p:'ohms'}],calc(){const V=pf('ov'),I=pf('oi'),R=pf('or');if(!isNaN(V)&&!isNaN(I))return`R = ${(V/I).toFixed(4)} Ω · P = ${(V*I).toFixed(3)} W`;if(!isNaN(V)&&!isNaN(R))return`I = ${(V/R).toFixed(4)} A · P = ${(V*V/R).toFixed(3)} W`;if(!isNaN(I)&&!isNaN(R))return`V = ${(I*R).toFixed(3)} V · P = ${(I*I*R).toFixed(3)} W`;return'Fill any 2 values';}},
+  vdiv:{title:'VOLTAGE DIVIDER',fields:[{id:'vd-vi',l:'V_IN',p:'volts'},{id:'vd-r1',l:'R1 (Ω)',p:'ohms'},{id:'vd-r2',l:'R2 (Ω)',p:'ohms'}],calc(){const Vin=pf('vd-vi'),R1=pf('vd-r1'),R2=pf('vd-r2');if([Vin,R1,R2].some(isNaN))return'Fill all';return`V_OUT = ${(Vin*R2/(R1+R2)).toFixed(4)} V`;}},
+  beam:{title:'BEAM DEFLECTION',fields:[{id:'bf',l:'LOAD (N)',p:'newtons'},{id:'bl',l:'LENGTH (mm)',p:'mm'},{id:'be',l:'MODULUS (GPa)',p:'200=steel, 69=Al'},{id:'bI',l:'2ND MOMENT (mm⁴)',p:'b×h³/12'}],calc(){const F=pf('bf'),L=pf('bl'),E=pf('be')*1000,I=pf('bI');if([F,L,E,I].some(isNaN))return'Fill all';return`δ = ${(F*Math.pow(L,3)/(48*E*I)).toFixed(5)} mm`;}},
+  mass:{title:'PART MASS',fields:[{id:'mv',l:'VOLUME (cm³)',p:'cm³'},{id:'mr',l:'DENSITY (g/cm³)',p:'Al=2.7, Steel=7.87, PLA=1.24'}],calc(){const v=pf('mv'),r=pf('mr');if([v,r].some(isNaN))return'Fill all';const m=v*r;return`${m.toFixed(2)} g (${(m/1000).toFixed(4)} kg)`;}},
+  gear:{title:'GEAR RATIO',fields:[{id:'gd',l:'DRIVE TEETH',p:'teeth'},{id:'gn',l:'DRIVEN TEETH',p:'teeth'},{id:'gi',l:'INPUT RPM',p:'rpm (optional)'}],calc(){const D=pf('gd'),N=pf('gn'),RPM=pf('gi');if([D,N].some(isNaN))return'Fill drive and driven';const ratio=N/D;return`Ratio = ${ratio.toFixed(4)}:1${!isNaN(RPM)?` · Output = ${(RPM/ratio).toFixed(1)} RPM`:''}  `;}},
+  stepper:{title:'STEPPER STEPS/MM',fields:[{id:'ss',l:'STEPS/REV',p:'e.g. 200'},{id:'sm',l:'MICROSTEPPING',p:'e.g. 16'},{id:'sp',l:'LEAD SCREW PITCH (mm)',p:'e.g. 2'}],calc(){const S2=pf('ss'),M=pf('sm'),P=pf('sp');if([S2,M,P].some(isNaN))return'Fill all';return`${(S2*M/P).toFixed(2)} steps/mm`;}},
+  wire:{title:'WIRE CURRENT (AWG)',fields:[{id:'wa',l:'AWG SIZE',p:'e.g. 22, 18, 14, 12'}],calc(){const awg=pf('wa');const t={22:0.9,20:1.5,18:2.3,16:3.7,14:5.9,12:9.3,10:15,8:24,6:37};const a=t[awg];return a?`AWG ${awg} → max ${a} A`:'Use 22/20/18/16/14/12/10/8/6';}},
+  pwm:{title:'PWM FREQUENCY',fields:[{id:'pt',l:'TIMER CLOCK (MHz)',p:'e.g. 16'},{id:'pp',l:'PRESCALER',p:'1, 8, 64, 256, 1024'},{id:'ptop',l:'TOP VALUE',p:'e.g. 255, 1023'}],calc(){const T=pf('pt')*1e6,P=pf('pp'),TOP=pf('ptop');if([T,P,TOP].some(isNaN))return'Fill all';return`f = ${(T/(P*(TOP+1))/1000).toFixed(3)} kHz`;}}
+};
+function pf(id){return parseFloat(document.getElementById(id)?.value||'');}
+function openEng(type){const c=ENG[type];if(!c)return;document.getElementById('calc-mtitle').textContent=c.title;document.getElementById('calc-mbody').innerHTML=c.fields.map(f=>`<div class="fg"><div class="flbl">${f.l}</div><input class="fi" id="${f.id}" placeholder="${f.p}" oninput="runEngCalc()"></div>`).join('')+`<div style="background:rgba(0,0,0,0.4);border:1px solid var(--border2);border-left:2px solid var(--cyan);padding:8px;font-size:12px;color:var(--cyan);font-family:'Oxanium',sans-serif;" id="engres">// Fill values above</div>`;window._ec=type;om('mCalc');}
+function runEngCalc(){const type=window._ec;if(!type)return;const c=ENG[type];if(!c)return;const res=document.getElementById('engres');if(!res)return;try{res.textContent=c.calc();}catch(e){res.textContent='Error';}}
+// WEATHER
+async function loadWeather(){try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=49.5&longitude=-96.7&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,uv_index,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America%2FWinnipeg&forecast_days=5');const d=await r.json();const c=d.current;const icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',61:'🌧️',71:'❄️',73:'🌨️',80:'🌦️',95:'⛈️'};const icon=icons[c.weather_code]||icons[Math.floor(c.weather_code/10)*10]||'🌡️';document.getElementById('wtemp').innerHTML=`${Math.round(c.temperature_2m)}<span class="wu">°C</span>`;document.getElementById('wdesc').textContent=icon+' Steinbach, MB';document.getElementById('wwind').textContent=`${Math.round(c.wind_speed_10m)} km/h`;document.getElementById('whum').textContent=c.relative_humidity_2m+'%';document.getElementById('wfeels').textContent=Math.round(c.apparent_temperature)+'°C';document.getElementById('wuv').textContent=c.uv_index<=2?'Low':c.uv_index<=5?'Moderate':'High';const fc=document.getElementById('wfc');const days=['Today','Tmrw','Day3','Day4','Day5'];fc.innerHTML=(d.daily.temperature_2m_max||[]).slice(0,5).map((mx,i)=>`<div class="wfd"><div class="wfdn">${days[i]}</div><div class="wfdt">${Math.round(mx)}°<span style="color:var(--dim);font-size:8px;">/${Math.round(d.daily.temperature_2m_min[i])}°</span></div></div>`).join('');}catch(e){document.getElementById('wdesc').textContent='Weather unavailable';}}
+loadWeather();setInterval(loadWeather,900000);
+// NEWS
+let newsTimeF='all',newsTopicF='',newsTopicFR='tech',allNews=[];
+async function loadNews(){const el=document.getElementById('newslist');if(el)el.innerHTML='<div style="padding:14px;color:var(--dim);font-size:9px;">// Fetching via AI...</div>';document.getElementById('newsts').textContent='LOADING...';const tm={tech:'technology OR artificial intelligence',gaming:'video games OR gaming',science:'science OR research OR space',electronics:'electronics OR Arduino OR PCB OR 3D printing',making:'maker OR CNC OR fabrication OR DIY',world:'world news OR politics'};const topic=newsTopicF?tm[newsTopicF]:'technology OR science OR gaming OR electronics OR maker';const time=newsTimeF==='all'?'today':newsTimeF==='1h'?'last hour':newsTimeF==='6h'?'last 6 hours':newsTimeF==='24h'?'last 24 hours':newsTimeF==='3d'?'last 3 days':'last week';
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'News aggregator. Return ONLY JSON array of 12 items: [{"headline":"...","source":"...","age":"2h ago","topic":"tech","url":"https://..."}]. No markdown.',messages:[{role:'user',content:`Trending news: ${topic}. Time: ${time}. 12 items as JSON array.`}],max_tokens:1200})});const d=await r.json();if(d.ok){const txt=d.text.replace(/```json|```/g,'').trim();allNews=JSON.parse(txt.slice(txt.indexOf('['),txt.lastIndexOf(']')+1));renderNews();document.getElementById('newsts').textContent='UPDATED '+new Date().toLocaleTimeString('en-CA',{hour12:false,hour:'2-digit',minute:'2-digit'});}}
+catch(e){if(el)el.innerHTML='<div style="padding:14px;color:var(--dim);font-size:9px;">// Server offline. Run server.py</div>';}}
+function renderNews(){const tc={'tech':'var(--cyan)','gaming':'var(--warn)','science':'var(--green2)','electronics':'var(--cyan)','making':'var(--green2)','world':'var(--grey2)','default':'var(--grey2)'};const html=!allNews.length?'<div style="padding:14px;color:var(--dim);font-size:9px;">// No news.</div>':allNews.map(n=>`<div class="ni" onclick="window.open('${n.url||'https://www.google.com/search?q='+encodeURIComponent(n.headline)}','_blank')"><div class="nh">${n.headline}</div><div class="nm"><span class="ntag" style="color:${tc[n.topic]||tc.default};border-color:${tc[n.topic]||tc.default};">${(n.topic||'NEWS').toUpperCase()}</span>${n.source?n.source+' · ':''}${n.age||''}</div></div>`).join('');
+const el=document.getElementById('newslist');if(el)el.innerHTML=html;
+const rEl=document.getElementById('newslistr');if(rEl)rEl.innerHTML=!allNews.length?'<div style="padding:10px;color:var(--dim);font-size:8px;">// Load news first.</div>':allNews.filter(n=>!newsTopicFR||n.topic===newsTopicFR).slice(0,6).map(n=>`<div class="ni" onclick="window.open('${n.url||'#'}','_blank')"><div class="nh" style="font-size:9px;">${n.headline}</div><div class="nm">${n.age||''}</div></div>`).join('');}
+function fntime(t,el){newsTimeF=t;document.querySelectorAll('#tc-news .nfilt').forEach(f=>{if(['ALL','1H','6H','24H','3D','1W'].includes(f.textContent))f.classList.remove('active');});el.classList.add('active');loadNews();}
+function fntopic(t,el){if(newsTopicF===t){newsTopicF='';el.classList.remove('active');}else{newsTopicF=t;document.querySelectorAll('#tc-news .nfilt').forEach(f=>{if(['TECH','GAMING','SCIENCE','ELECTRONICS','MAKING','WORLD'].includes(f.textContent))f.classList.remove('active');});el.classList.add('active');}loadNews();}
+function fnR(t,el){newsTopicFR=t;document.querySelectorAll('#rp-news .nfilt').forEach(f=>f.classList.remove('active'));el.classList.add('active');renderNews();}
+// DATASHEETS
+async function lookupDS(){const q=document.getElementById('dsinp').value.trim();if(!q)return;const res=document.getElementById('dsres');res.textContent='// Searching...';
+try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Component datasheet assistant. Provide: 1) Direct datasheet PDF URL 2) Key specs: voltage range, package type, current rating 3) Pinout summary. Be concise. URL on line 1.',messages:[{role:'user',content:`Datasheet and specs for: ${q}`}],max_tokens:400})});const d=await r.json();if(d.ok){res.innerHTML=d.text.replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');const inInv=S.inventory.find(i=>i.name.toLowerCase().includes(q.toLowerCase()));if(inInv)res.innerHTML+=`<br><br><span style="color:var(--green2)">✓ In inventory: ${inInv.haveQty} units</span>`;}else res.textContent='// Error: '+d.error;}
+catch(e){res.textContent='// Server offline';}}
+function renderDSStar(){const el=document.getElementById('dsstarred');if(!el)return;el.innerHTML=!S.dsStarred.length?'<div style="color:var(--dim);font-size:8px;">// No starred.</div>':S.dsStarred.map((s,i)=>`<div class="dssi"><div class="dssn">${s.name}</div><span style="color:var(--cyan);cursor:pointer;font-size:8px;" onclick="document.getElementById('dsinp').value='${s.name}';lookupDS()">LOOKUP</span><span style="color:var(--red);cursor:pointer;font-size:10px;margin-left:6px;" onclick="S.dsStarred.splice(${i},1);save();renderDSStar()">✕</span></div>`).join('');}
+// LAUNCHER
+function renderLauncher(){const el=document.getElementById('launchgrid');if(!el)return;el.innerHTML=S.launcherTiles.map((t,i)=>`<a href="${t.url}" target="_blank" class="atile" style="flex-direction:row;gap:10px;padding:14px;justify-content:flex-start;"><div class="ti" style="font-size:20px;">${t.icon}</div><div><div class="tn" style="font-size:10px;letter-spacing:1px;">${t.name}</div><div style="font-size:7px;color:var(--dim);margin-top:1px;">${new URL(t.url).hostname}</div></div></a>`).join('');}
+function addTile(){const name=prompt('Tile name:');if(!name)return;const url=prompt('URL:');if(!url)return;const icon=prompt('Emoji icon:')||'🔗';S.launcherTiles.push({name:name.toUpperCase(),icon,url});save();renderLauncher();toast('Tile added');}
+// TEMPLATES
+function populateTmplSelect(){const sel=document.getElementById('np-tmpl');if(!sel)return;sel.innerHTML='<option value="">None</option>'+S.templates.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');sel.onchange=function(){const t=S.templates.find(x=>x.id==this.value);const prev=document.getElementById('tmpl-prev');if(t&&prev){prev.style.display='block';prev.innerHTML=`<strong style="color:var(--cyan);">${t.name}</strong><br>${t.checklist?.length||0} tasks · ${t.bom?.length||0} BOM items`;}else if(prev)prev.style.display='none';};}
+async function genTemplate(){if(S.projects.filter(p=>p.status==='complete').length<1){toast('Complete a project first');return;}try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Maker assistant. Analyze completed projects and generate reusable template. Return ONLY JSON: {"name":"Template Name","type":"firmware|mechanical|electronics|3dprint|mixed","checklist":[{"text":"task","pri":"high|med|low"}],"bom":[{"name":"part","qty":"1"}]}',messages:[{role:'user',content:`Analyze completed projects and create reusable template: ${JSON.stringify(S.projects.filter(p=>p.status==='complete').map(p=>({name:p.name,desc:p.desc,checklist:p.checklist,bom:p.bom})))}`}],max_tokens:600})});const d=await r.json();if(d.ok){const txt=d.text.replace(/```json|```/g,'').trim();const tmpl=JSON.parse(txt);tmpl.id=Date.now();S.templates.push(tmpl);save();renderSettings();populateTmplSelect();toast('Template: '+tmpl.name);}}catch(e){toast('Server offline');}}
+function renderTmpls(){const el=document.getElementById('tmplsettings');if(!el)return;el.innerHTML=!S.templates.length?'<div style="color:var(--dim);font-size:9px;">// No templates yet.</div>':S.templates.map((t,i)=>`<div class="tmplc"><div class="tmpln">${t.name}</div><div class="tmplm">${t.type?.toUpperCase()||'GENERAL'} · ${t.checklist?.length||0} tasks · ${t.bom?.length||0} parts</div><span style="color:var(--red);cursor:pointer;font-size:8px;margin-top:4px;display:inline-block;" onclick="S.templates.splice(${i},1);save();renderSettings();">DELETE</span></div>`).join('');}
+// AI SUGGESTIONS
+async function runAIScan(){const now=new Date();const suggs=[];S.projects.filter(p=>p.deadline&&new Date(p.deadline)<now&&p.status!=='complete').forEach(p=>suggs.push({cat:'PROJECTS',text:`"${p.name}" is overdue.`,action:'proj',id:p.id}));S.inventory.filter(i=>gst(i)!=='ok').forEach(i=>suggs.push({cat:'INVENTORY',text:`"${i.name}" is ${gst(i)==='out'?'OUT':'LOW'} (have: ${i.haveQty}).`,action:'inv'}));
+if(S.projects.length>0){try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Maker assistant. Return ONLY JSON: [{"cat":"PROJECTS|INVENTORY|MATERIALS|TOOLS","text":"suggestion"}]. 1-3 items. No markdown.',messages:[{role:'user',content:`Projects: ${JSON.stringify(S.projects.map(p=>({name:p.name,status:p.status,progress:p.progress,deadline:p.deadline})))}. Low stock: ${JSON.stringify(S.inventory.filter(i=>gst(i)!=='ok').map(i=>i.name))}. Suggest 1-3 improvements.`}],max_tokens:400})});const d=await r.json();if(d.ok){const txt=d.text.replace(/```json|```/g,'').trim();JSON.parse(txt.slice(txt.indexOf('['),txt.lastIndexOf(']')+1)).forEach(s=>suggs.push(s));}}catch(e){}}
+S.suggestions=suggs;const count=suggs.length;const fab=document.getElementById('sqfab');fab.style.display=count>0?'block':'none';document.getElementById('sqn').textContent=count;document.getElementById('bp').style.display=S.projects.filter(p=>p.deadline&&new Date(p.deadline)<new Date()&&p.status!=='complete').length>0?'inline':'none';document.getElementById('bi').style.display=S.inventory.filter(i=>gst(i)!=='ok').length>0?'inline':'none';
+document.getElementById('sqitems').innerHTML=!suggs.length?'<div style="padding:14px;text-align:center;font-size:9px;color:var(--dim);">// No suggestions.</div>':suggs.map((s,i)=>`<div class="sqi" id="sq-${i}"><div class="sqic">${s.cat}</div><div class="sqit">${s.text}</div><div class="sqibs"><button class="sqapp" onclick="applySQ(${i})">APPLY</button><button class="sqdis" onclick="disSQ(${i})">DISMISS</button></div></div>`).join('');}
+function toggleSQ(){S.sqOpen=!S.sqOpen;document.getElementById('sqpanel').classList.toggle('open',S.sqOpen);}
+function applySQ(i){const s=S.suggestions[i];if(s?.action==='proj'&&s.id)openProj(s.id);else if(s?.action==='inv')switchTab('inventory',document.querySelectorAll('.ntab')[2]);disSQ(i);}
+function disSQ(i){const el=document.getElementById('sq-'+i);if(el)el.remove();S.suggestions.splice(i,1);document.getElementById('sqn').textContent=S.suggestions.length;}
+// COMMAND BAR
+function openCmd(){document.getElementById('cbar').classList.add('open');document.getElementById('cov').classList.add('open');document.getElementById('cin').value='';document.getElementById('cin').focus();cmdSearch('');}
+function closeCmd(){document.getElementById('cbar').classList.remove('open');document.getElementById('cov').classList.remove('open');}
+function cmdSearch(q){const ql=q.toLowerCase();const res=[];
+if(!q){res.push({i:'📋',m:'New Project',s:'',t:'PROJECTS',a:()=>om('mProj')});res.push({i:'📦',m:'Add Inventory Item',s:'',t:'INVENTORY',a:()=>om('mInv')});res.push({i:'🔧',m:'Add Tool',s:'',t:'TOOLS',a:()=>om('mTool')});res.push({i:'🧱',m:'Add Material',s:'',t:'MATERIALS',a:()=>om('mMat')});res.push({i:'🤖',m:'Ask AI',s:'Open assistant',t:'AI',a:()=>switchTab('command',document.querySelectorAll('.ntab')[0])});res.push({i:'📐',m:'Smart Matcher',s:'',t:'MATCHER',a:()=>switchTab('matcher',document.querySelectorAll('.ntab')[5])});}
+else{if(ql.includes('project'))res.push({i:'📋',m:'New Project',s:'',t:'PROJECTS',a:()=>om('mProj')});if(ql.includes('invent')||ql.includes('part'))res.push({i:'📦',m:'Add Inventory',s:'',t:'INVENTORY',a:()=>om('mInv')});if(ql.includes('tool'))res.push({i:'🔧',m:'Add Tool',s:'',t:'TOOLS',a:()=>om('mTool')});if(ql.includes('material'))res.push({i:'🧱',m:'Add Material',s:'',t:'MATERIALS',a:()=>om('mMat')});if(ql.includes('news'))res.push({i:'📰',m:'Open News',s:'',t:'NEWS',a:()=>{switchTab('news',document.querySelectorAll('.ntab')[7]);loadNews();}});if(ql.includes('calc')||ql.match(/[\d+\-*\/]/))res.push({i:'🧮',m:'Calculate: '+q,s:'',t:'CALC',a:()=>{switchTab('calculator',document.querySelectorAll('.ntab')[6]);document.getElementById('cnlinp').value=q;}});if(ql.includes('dim')||ql.includes('wallpaper'))res.push({i:'🌙',m:'Toggle Dim Mode',s:'Alt+W',t:'DISPLAY',a:toggleDim});if(ql.includes('folder')||ql.includes('file'))res.push({i:'📁',m:'Choose Folder',s:'',t:'SETTINGS',a:chooseFolder});S.projects.filter(p=>p.name.toLowerCase().includes(ql)).forEach(p=>res.push({i:'📋',m:'Open: '+p.name,s:'Project',t:'PROJECTS',a:()=>openProj(p.id)}));if(res.length<2)res.push({i:'🤖',m:`Ask AI: "${q}"`,s:'',t:'AI',a:()=>{switchTab('command',document.querySelectorAll('.ntab')[0]);document.getElementById('chatinp').value=q;sendChat();}});}
+document.getElementById('crs').innerHTML=res.slice(0,6).map((r,i)=>`<div class="cr${i===0?' sel':''}" onclick="execCmd(${i})" data-i="${i}"><div class="cri">${r.i}</div><div class="crm">${r.m}${r.s?`<div style="font-size:7px;color:var(--dim);">${r.s}</div>`:''}</div><div class="crt">${r.t}</div></div>`).join('');
+window._ca=res.map(r=>r.a);}
+function execCmd(i){if(window._ca?.[i]){closeCmd();window._ca[i]();}}
+function cmdKey(e){if(e.key==='Escape'){closeCmd();return;}if(e.key==='Enter'){const s=document.querySelector('.cr.sel');if(s)execCmd(parseInt(s.dataset.i));}}
+// QUICK CAPTURE
+function toggleQC(){S.qcOpen=!S.qcOpen;document.getElementById('qcpanel').classList.toggle('open',S.qcOpen);if(S.qcOpen)document.getElementById('qci').focus();}
+async function submitQC(){const text=document.getElementById('qci').value.trim();if(!text)return;document.getElementById('qci').value='';toggleQC();try{const r=await fetch(API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Categorize quick capture. Return ONLY JSON: {"category":"idea|inventory|note|measurement","action":"brief description"}',messages:[{role:'user',content:text}],max_tokens:80})});const d=await r.json();if(d.ok){const res=JSON.parse(d.text.replace(/```json|```/g,'').trim());toast(`Captured as ${res.category.toUpperCase()}: ${res.action}`);}else toast('Captured: '+text.slice(0,40));}catch(e){toast('Captured: '+text.slice(0,40));}}
+// KEYBINDS
+const KB_LABELS={cmdBar:'Command Bar',quickCapture:'Quick Capture',dimMode:'Dim Mode',tab1:'Tab: Command',tab2:'Tab: Projects',tab3:'Tab: Inventory',tab4:'Tab: Materials',tab5:'Tab: Tools',tab6:'Tab: Matcher',tab7:'Tab: Calculator',tab8:'Tab: News',tab9:'Tab: Launcher',save:'Save',search:'Focus Search',export:'Export PDF',refresh:'Refresh'};
+const DEFAULT_KB={cmdBar:'ctrl+ ',quickCapture:'alt+c',dimMode:'alt+w',tab1:'ctrl+1',tab2:'ctrl+2',tab3:'ctrl+3',tab4:'ctrl+4',tab5:'ctrl+5',tab6:'ctrl+6',tab7:'ctrl+7',tab8:'ctrl+8',tab9:'ctrl+9',save:'ctrl+s',search:'ctrl+f',export:'ctrl+e',refresh:'ctrl+r'};
+function renderKB(){const el=document.getElementById('kblist');if(!el)return;el.innerHTML=Object.entries(KB_LABELS).map(([k,label])=>`<div class="kbrow${S.editingKB===k?' ed':''}" onclick="startRebind('${k}')" id="kb-${k}"><div class="kba">${label}</div><div class="kbk${S.editingKB===k?' wait':''}" id="kbk-${k}">${S.editingKB===k?'PRESS KEY...':fmtKey(S.keybinds[k])}</div></div>`).join('');}
+function fmtKey(k){if(!k)return'—';return k.replace('ctrl+',' Ctrl+').replace('alt+',' Alt+').replace('shift+',' Shift+').replace(' ','Space').trim();}
+function startRebind(key){S.editingKB=key;renderKB();const handler=e=>{e.preventDefault();const parts=[];if(e.ctrlKey)parts.push('ctrl');if(e.altKey)parts.push('alt');if(e.shiftKey)parts.push('shift');const k=e.key.toLowerCase();if(!['control','alt','shift','meta'].includes(k))parts.push(k);if(parts.length>0){S.keybinds[key]=parts.join('+');S.editingKB=null;document.removeEventListener('keydown',handler,true);save();renderKB();toast('Keybind updated: '+fmtKey(S.keybinds[key]));}};document.addEventListener('keydown',handler,true);}
+function resetKeybinds(){S.keybinds={...DEFAULT_KB};save();renderKB();toast('Keybinds reset');}
+function matchKB(e,action){const kb=S.keybinds[action];if(!kb)return false;const parts=kb.split('+');const nc=parts.includes('ctrl'),na=parts.includes('alt'),ns=parts.includes('shift');const kp=parts.find(p=>!['ctrl','alt','shift'].includes(p))||'';return e.ctrlKey===nc&&e.altKey===na&&e.shiftKey===ns&&(e.key.toLowerCase()===kp||e.key===' '&&kp==' ');}
+document.addEventListener('keydown',e=>{if(S.editingKB)return;const act=document.activeElement;const typing=act&&(act.tagName==='INPUT'||act.tagName==='TEXTAREA'||act.contentEditable==='true');
+if(matchKB(e,'cmdBar')){e.preventDefault();openCmd();return;}
+if(matchKB(e,'quickCapture')){e.preventDefault();toggleQC();return;}
+if(matchKB(e,'dimMode')){e.preventDefault();toggleDim();return;}
+if(e.key==='Escape'){closeCmd();closePD();document.querySelectorAll('.mo').forEach(m=>m.classList.remove('open'));if(S.qcOpen)toggleQC();if(S.sqOpen){S.sqOpen=false;document.getElementById('sqpanel').classList.remove('open');}return;}
+if(typing)return;
+const tabs=document.querySelectorAll('.ntab');for(let i=1;i<=9;i++){if(matchKB(e,'tab'+i)&&tabs[i-1]){e.preventDefault();switchTab(TABS[i-1],tabs[i-1]);return;}}
+if(matchKB(e,'save')){e.preventDefault();save();toast('Saved');return;}});
+// SETTINGS
+function applySettings(){try{document.getElementById('umeas').value=S.settings.measurement||'metric';document.getElementById('ucurr').value=S.settings.currency||'CAD';document.getElementById('utorque').value=S.settings.torque||'nm';document.getElementById('upres').value=S.settings.pressure||'kpa';document.getElementById('dimsl').value=S.dimLevel||20;document.getElementById('dimval').textContent=(S.dimLevel||20)+'%';document.documentElement.style.setProperty('--dl',(S.dimLevel||20)/100);}catch(e){}}
+function saveSettings(){S.settings.measurement=document.getElementById('umeas').value;S.settings.currency=document.getElementById('ucurr').value;S.settings.torque=document.getElementById('utorque').value;S.settings.pressure=document.getElementById('upres').value;save();toast('Settings saved');}
+function renderSettings(){renderKB();renderTmpls();populateTmplSelect();applySettings();}
+// MODALS
+function om(id){populateTmplSelect();document.getElementById(id).classList.add('open');}
+function cm(id){document.getElementById(id).classList.remove('open');}
+// TOAST
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+// FOOTER
+function updateTicker(){const parts=['// MAKER.OS','STEINBACH MB CA','CTRL+SPACE: COMMAND','ALT+C: CAPTURE'];if(S.projects.length)parts.push(S.projects.length+' PROJECTS');if(S.inventory.length)parts.push(S.inventory.length+' PARTS');if(S.tools.length)parts.push(S.tools.length+' TOOLS');const low=S.inventory.filter(i=>gst(i)!=='ok').length;if(low)parts.push('⚠ '+low+' LOW/OUT');document.getElementById('fscr').textContent=parts.join(' // ');}
+// RENDER ALL
+function renderAll(){renderProjects();renderInv();renderMats();renderTools();renderDSStar();updateTicker();}
+// PWA
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// INIT
+loadLS();
+setInterval(()=>{save();updateTicker();},60000);
+setInterval(runAIScan,1800000);
+setTimeout(runAIScan,5000);
+renderLauncher();
+addMsg('a','AI','Online. I\'m Claude — your AI engineering assistant. I have context on all your projects, inventory, tools, and materials.<br><br><span style="color:var(--dim);font-size:9px;">CTRL+SPACE: command bar &nbsp;·&nbsp; ALT+C: quick capture &nbsp;·&nbsp; ALT+W: dim/wallpaper mode &nbsp;·&nbsp; Settings → choose folder to save to PC</span>');
+</script>
+</body>
+</html>
